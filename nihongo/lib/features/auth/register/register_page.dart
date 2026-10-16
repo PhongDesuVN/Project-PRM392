@@ -141,7 +141,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                             ),
                             const Text(
-                              ' của Mazii',
+                              ' của Nihon',
                               style: TextStyle(
                                 color: AppColors.darkText,
                                 fontSize: 16,

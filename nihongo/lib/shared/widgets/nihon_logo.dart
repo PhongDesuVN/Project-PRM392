@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 class NihonLogo extends StatelessWidget {
@@ -20,46 +22,23 @@ class NihonLogo extends StatelessWidget {
             ),
           ),
           SizedBox(
-            width: 58,
-            height: 64,
-            child: Stack(
-              clipBehavior: Clip.none,
-              alignment: Alignment.center,
-              children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFF171717), width: 4),
-                  ),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    'い',
-                    style: TextStyle(
-                      color: Color(0xFFE23832),
-                      fontSize: 34,
-                      fontWeight: FontWeight.w700,
-                      height: 1,
-                    ),
+            width: 60,
+            height: 68,
+            child: CustomPaint(
+              painter: _MagnifierPainter(),
+              child: const Align(
+                // Canh chữ vào đúng tâm lens (26, 26) trong khung 60x68.
+                alignment: Alignment(-0.133, -0.235),
+                child: Text(
+                  'い',
+                  style: TextStyle(
+                    color: Color(0xFFE23832),
+                    fontSize: 30,
+                    fontWeight: FontWeight.w700,
+                    height: 1,
                   ),
                 ),
-                Positioned(
-                  right: -1,
-                  bottom: 1,
-                  child: Transform.rotate(
-                    angle: 0.78,
-                    child: Container(
-                      width: 6,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF171717),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
           const Text(
@@ -75,4 +54,43 @@ class NihonLogo extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Vẽ kính lúp: cán mọc ra từ rìa vành theo hướng chéo 45 độ.
+class _MagnifierPainter extends CustomPainter {
+  static const _ink = Color(0xFF171717);
+  static const _center = Offset(26, 26);
+  static const _lensRadius = 22.0;
+  static const _ringWidth = 4.0;
+  static const _handleLength = 16.0;
+  static const _handleWidth = 6.0;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final dir = Offset(math.cos(math.pi / 4), math.sin(math.pi / 4));
+    final start = _center + dir * (_lensRadius + 1);
+    final end = _center + dir * (_lensRadius + 1 + _handleLength);
+
+    canvas.drawLine(
+      start,
+      end,
+      Paint()
+        ..color = _ink
+        ..strokeWidth = _handleWidth
+        ..strokeCap = StrokeCap.round,
+    );
+
+    // Vẽ vành sau cán để vành che chân cán, tạo mối nối liền mạch.
+    canvas.drawCircle(
+      _center,
+      _lensRadius,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = _ringWidth
+        ..color = _ink,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _MagnifierPainter oldDelegate) => false;
 }
