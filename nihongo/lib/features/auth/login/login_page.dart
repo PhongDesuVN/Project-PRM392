@@ -1,12 +1,14 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
-import '../../../shared/widgets/auth_text_field.dart';
-import '../../../shared/widgets/google_sign_in_button.dart';
-import '../../../shared/widgets/nihon_logo.dart';
-import '../../../theme/app_theme.dart';
+import '../../../core/api.dart';
+import '../../../shared/ui.dart';
+
+import '../../../shared/nihon_logo.dart';
+import '../auth_service.dart';
 import '../forgot_password/forgot_password_dialog.dart';
+import '../home/home_page.dart';
 import '../register/register_page.dart';
-import '../../../shared/widgets/japanese_background.dart';
+import '../../../shared/japanese_background.dart';
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -16,12 +18,53 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _authService = AuthService();
+
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _authService.dispose();
+    super.dispose();
+  }
 
   void _showMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
   }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final result = await _authService.login(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => HomePage(
+            email: result.email,
+            fullName: result.fullName,
+          ),
+        ),
+      );
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      _showMessage(e.message);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +100,7 @@ class _LoginPageState extends State<LoginPage> {
                         AuthTextField(
                           hintText: 'Nhập email của bạn',
                           prefixIcon: Icons.person_outline,
+                          controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
                           validator: _validateEmail,
@@ -66,6 +110,7 @@ class _LoginPageState extends State<LoginPage> {
                           hintText: 'Mật khẩu',
                           prefixIcon: Icons.visibility_outlined,
                           isPassword: true,
+                          controller: _passwordController,
                           textInputAction: TextInputAction.done,
                           validator: (value) => value == null || value.isEmpty
                               ? 'Vui lòng nhập mật khẩu'
@@ -77,11 +122,8 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 16),
                   _PrimaryButton(
                     label: 'Đăng nhập',
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        _showMessage('Giao diện đăng nhập đã sẵn sàng.');
-                      }
-                    },
+                    isLoading: _isLoading,
+                    onPressed: _isLoading ? null : _submit,
                   ),
                   const SizedBox(height: 22),
                   TextButton(
@@ -155,10 +197,15 @@ class _LoginPageState extends State<LoginPage> {
 }
 
 class _PrimaryButton extends StatelessWidget {
-  const _PrimaryButton({required this.label, required this.onPressed});
+  const _PrimaryButton({
+    required this.label,
+    required this.onPressed,
+    this.isLoading = false,
+  });
 
   final String label;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -172,7 +219,16 @@ class _PrimaryButton extends StatelessWidget {
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
         ),
-        child: Text(label, style: const TextStyle(fontSize: 19)),
+        child: isLoading
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: Colors.white,
+                ),
+              )
+            : Text(label, style: const TextStyle(fontSize: 19)),
       ),
     );
   }

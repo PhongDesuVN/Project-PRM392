@@ -1,0 +1,15 @@
+{
+  "java.jdt.ls.java.home": "C:/Users/Admin/Desktop/PRM/Project-PRM392/nihongo/tools/jdk/jdk-21.0.12.1+1",
+  "java.configuration.runtimes": [
+    {
+      "name": "JavaSE-21",
+      "path": "C:/Users/Admin/Desktop/PRM/Project-PRM392/nihongo/tools/jdk/jdk-21.0.12.1+1",
+      "default": true
+    }
+  ],
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "maven.executable.path": "C:/Users/Admin/Desktop/PRM/Project-PRM392/nihongo/tools/apache-maven-3.9.9/bin/mvn.cmd",
+  "maven.terminal.useJavaHome": true,
+  "java.server.launchMode": "Standard",
+  "java.compile.nullAnalysis.mode": "automatic"
+}

@@ -1,6 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
-import '../../../theme/app_theme.dart';
+import '../../../core/api.dart';
+import '../../../shared/ui.dart';
+import '../auth_service.dart';
+import 'reset_password_page.dart';
 
 Future<void> showForgotPasswordDialog(BuildContext context) {
   return showDialog<void>(
@@ -18,18 +21,66 @@ class ForgotPasswordDialog extends StatefulWidget {
 
 class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
   final _emailController = TextEditingController();
+  final _authService = AuthService();
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _emailController.dispose();
+    _authService.dispose();
     super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final email = _emailController.text.trim();
+    setState(() => _isLoading = true);
+
+    try {
+      final message = await _authService.forgotPassword(email: email);
+      if (!mounted) return;
+
+      // Backend dev mode nhet token vao message dang "[dev] token=xxx".
+      final match = RegExp(r'token=(\S+)').firstMatch(message);
+      final devToken = match?.group(1);
+
+      final navigator = Navigator.of(context);
+      final messenger = ScaffoldMessenger.of(context);
+
+      navigator.pop();
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            devToken != null
+                ? 'Đã tạo mã đặt lại mật khẩu.'
+                : 'Nếu email hợp lệ, bạn sẽ nhận được hướng dẫn đặt lại mật khẩu.',
+          ),
+        ),
+      );
+
+      await navigator.push(
+        MaterialPageRoute<void>(
+          builder: (_) => ResetPasswordPage(
+            email: email,
+            prefilledToken: devToken,
+          ),
+        ),
+      );
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final canSubmit = _emailController.text.contains('@') && !_isLoading;
+
     return AlertDialog(
       title: const Text(
-        'Nhập email tài khoản Mazii của bạn',
+        'Nhập email tài khoản Nihon của bạn',
         style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700),
       ),
       titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 14),
@@ -37,6 +88,7 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
       content: TextField(
         controller: _emailController,
         autofocus: true,
+        enabled: !_isLoading,
         keyboardType: TextInputType.emailAddress,
         textInputAction: TextInputAction.done,
         onChanged: (_) => setState(() {}),
@@ -61,7 +113,7 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
               child: SizedBox(
                 height: 48,
                 child: TextButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: _isLoading ? null : () => Navigator.pop(context),
                   style: TextButton.styleFrom(
                     backgroundColor: const Color(0xFFE8ECEF),
                     foregroundColor: AppColors.darkText,
@@ -75,19 +127,17 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
               child: SizedBox(
                 height: 48,
                 child: FilledButton(
-                  onPressed: _emailController.text.contains('@')
-                      ? () {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Nếu email hợp lệ, bạn sẽ nhận được hướng dẫn đặt lại mật khẩu.',
-                              ),
-                            ),
-                          );
-                        }
-                      : null,
-                  child: const Text('Ok', style: TextStyle(fontSize: 16)),
+                  onPressed: canSubmit ? _submit : null,
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text('Ok', style: TextStyle(fontSize: 16)),
                 ),
               ),
             ),

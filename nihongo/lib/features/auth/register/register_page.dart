@@ -1,8 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
-import '../../../shared/widgets/auth_text_field.dart';
-import '../../../theme/app_theme.dart';
-import '../../../shared/widgets/japanese_background.dart';
+import '../../../core/api.dart';
+import '../../../shared/ui.dart';
+import '../../../shared/japanese_background.dart';
+import '../auth_service.dart';
+import '../home/home_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -13,13 +15,53 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
+  final _fullNameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _authService = AuthService();
   bool _acceptedTerms = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
+    _fullNameController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
+    _authService.dispose();
     super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (!_acceptedTerms) {
+      _showMessage('Vui lòng đồng ý với điều khoản sử dụng.');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      final result = await _authService.register(
+        email: _emailController.text,
+        password: _passwordController.text,
+        fullName: _fullNameController.text,
+      );
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => HomePage(
+            email: result.email,
+            fullName: result.fullName,
+          ),
+        ),
+        (route) => false,
+      );
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      _showMessage(e.message);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -61,8 +103,20 @@ class _RegisterPageState extends State<RegisterPage> {
                     child: Column(
                       children: [
                         AuthTextField(
-                          hintText: 'Nhập email của bạn',
+                          hintText: 'Họ và tên',
                           prefixIcon: Icons.person_outline,
+                          controller: _fullNameController,
+                          textInputAction: TextInputAction.next,
+                          validator: (value) =>
+                              value == null || value.trim().isEmpty
+                                  ? 'Vui lòng nhập họ và tên'
+                                  : null,
+                        ),
+                        const SizedBox(height: 16),
+                        AuthTextField(
+                          hintText: 'Nhập email của bạn',
+                          prefixIcon: Icons.mail_outline,
+                          controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
                           validator: _validateEmail,
@@ -70,7 +124,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         const SizedBox(height: 16),
                         AuthTextField(
                           hintText: 'Mật khẩu',
-                          prefixIcon: Icons.visibility_outlined,
+                          prefixIcon: Icons.lock_outline,
                           isPassword: true,
                           controller: _passwordController,
                           textInputAction: TextInputAction.next,
@@ -81,19 +135,13 @@ class _RegisterPageState extends State<RegisterPage> {
                         const SizedBox(height: 16),
                         AuthTextField(
                           hintText: 'Nhập lại mật khẩu',
-                          prefixIcon: Icons.visibility_outlined,
+                          prefixIcon: Icons.lock_outline,
                           isPassword: true,
-                          textInputAction: TextInputAction.next,
+                          textInputAction: TextInputAction.done,
                           validator: (value) => value != _passwordController.text
                               ? 'Mật khẩu nhập lại chưa khớp'
                               : null,
-                        ),
-                        const SizedBox(height: 16),
-                        const AuthTextField(
-                          hintText: 'Mã giới thiệu',
-                          prefixIcon: Icons.visibility_outlined,
-                          textInputAction: TextInputAction.done,
-                        ),
+                          ),
                       ],
                     ),
                   ),
@@ -157,15 +205,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     width: double.infinity,
                     height: 56,
                     child: FilledButton(
-                      onPressed: () {
-                        final isValid = _formKey.currentState!.validate();
-                        if (!isValid) return;
-                        if (!_acceptedTerms) {
-                          _showMessage('Vui lòng đồng ý với điều khoản sử dụng.');
-                          return;
-                        }
-                        _showMessage('Giao diện đăng ký đã sẵn sàng.');
-                      },
+                        onPressed: _isLoading ? null : _submit,
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.blue,
                         foregroundColor: Colors.white,
@@ -173,7 +213,19 @@ class _RegisterPageState extends State<RegisterPage> {
                           borderRadius: BorderRadius.circular(7),
                         ),
                       ),
-                      child: const Text('Đăng kí', style: TextStyle(fontSize: 19)),
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              'Đăng kí',
+                              style: TextStyle(fontSize: 19),
+                            ),
                     ),
                   ),
                   const Padding(

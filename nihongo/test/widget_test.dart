@@ -32,7 +32,7 @@ void main() {
     await tester.tap(find.text('Quên mật khẩu?'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Nhập email tài khoản Mazii của bạn'), findsOneWidget);
+    expect(find.text('Nhập email tài khoản Nihon của bạn'), findsOneWidget);
     expect(find.text('Hủy'), findsOneWidget);
   });
 }
