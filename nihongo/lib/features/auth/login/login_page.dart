@@ -6,7 +6,7 @@ import '../../../shared/ui.dart';
 import '../../../shared/nihon_logo.dart';
 import '../auth_service.dart';
 import '../forgot_password/forgot_password_dialog.dart';
-import '../home/home_page.dart';
+import '../../dashboard/dashboard_page.dart';
 import '../register/register_page.dart';
 import '../../../shared/japanese_background.dart';
 class LoginPage extends StatefulWidget {
@@ -51,7 +51,7 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute<void>(
-          builder: (_) => HomePage(
+          builder: (_) => DashboardPage(
             email: result.email,
             fullName: result.fullName,
           ),

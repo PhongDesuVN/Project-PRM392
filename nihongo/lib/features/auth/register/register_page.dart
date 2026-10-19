@@ -4,7 +4,7 @@ import '../../../core/api.dart';
 import '../../../shared/ui.dart';
 import '../../../shared/japanese_background.dart';
 import '../auth_service.dart';
-import '../home/home_page.dart';
+import '../../dashboard/dashboard_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -49,7 +49,7 @@ class _RegisterPageState extends State<RegisterPage> {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute<void>(
-          builder: (_) => HomePage(
+          builder: (_) => DashboardPage(
             email: result.email,
             fullName: result.fullName,
           ),

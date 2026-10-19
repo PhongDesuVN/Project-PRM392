@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 /// Nền phong cách Nhật: mặt trời đỏ mờ, hoa anh đào rơi, sóng Seigaiha ở đáy.
 /// Đặt file này tại: lib/shared/widgets/japanese_background.dart
-class JapaneseBackground extends StatefulWidget {
+class JapaneseBackground extends StatelessWidget {
   const JapaneseBackground({
     super.key,
     required this.child,
@@ -19,38 +19,13 @@ class JapaneseBackground extends StatefulWidget {
   final bool showSun;
 
   @override
-  State<JapaneseBackground> createState() => _JapaneseBackgroundState();
-}
-
-class _JapaneseBackgroundState extends State<JapaneseBackground>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final List<_Petal> _petals;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 40),
-    )..repeat();
-
-    final random = math.Random(7);
-    _petals = List.generate(widget.petalCount, (_) => _Petal.random(random));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final random = math.Random(7);
+    final petals = List.generate(petalCount, (_) => _Petal.random(random));
+
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Nền trắng pha chút hồng nhạt ở trên
         const DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -61,22 +36,19 @@ class _JapaneseBackgroundState extends State<JapaneseBackground>
             ),
           ),
         ),
-        if (widget.showSun)
+        if (showSun)
           const IgnorePointer(child: RepaintBoundary(child: _SunLayer())),
-        if (widget.showWaves)
+        if (showWaves)
           const IgnorePointer(child: RepaintBoundary(child: _WaveLayer())),
         IgnorePointer(
           child: RepaintBoundary(
-            child: AnimatedBuilder(
-              animation: _controller,
-              builder: (context, _) => CustomPaint(
-                painter: _PetalPainter(_petals, _controller.value),
-                size: Size.infinite,
-              ),
+            child: CustomPaint(
+              painter: _PetalPainter(petals, 0),
+              size: Size.infinite,
             ),
           ),
         ),
-        widget.child,
+        child,
       ],
     );
   }
