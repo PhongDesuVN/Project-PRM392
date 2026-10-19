@@ -4,7 +4,6 @@ import com.prm.backend.dto.auth.AuthDtos.*;
 import com.prm.backend.entity.Entities.ResetToken;
 import com.prm.backend.entity.Entities.User;
 import com.prm.backend.exception.GlobalExceptionHandler.BusinessException;
-import com.prm.backend.repository.Repositories;
 import com.prm.backend.repository.ResetTokenRepository;
 import com.prm.backend.repository.UserRepository;
 import com.prm.backend.security.SecurityConfig.JwtProvider;

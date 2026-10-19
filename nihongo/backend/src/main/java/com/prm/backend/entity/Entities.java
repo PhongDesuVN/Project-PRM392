@@ -105,7 +105,7 @@ public final class Entities {
     }
 
     /** Token quen mat khau. Luu dang hash, DB khong giu ban ro. */
-    @Entity
+    @Entity(name = "ResetToken")
     @Table(name = "password_reset_tokens")
     public static class ResetToken {
 

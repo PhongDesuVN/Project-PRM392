@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface ResetTokenRepository extends JpaRepository<ResetToken, Integer> {
     Optional<ResetToken> findByTokenHash(String tokenHash);
 
-    @Modifying
-    @Query("UPDATE Entities$ResetToken t SET t.usedAt = CURRENT_TIMESTAMP WHERE t.user.id = :userId AND t.usedAt IS NULL")
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE ResetToken t SET t.usedAt = CURRENT_TIMESTAMP WHERE t.user.id = :userId AND t.usedAt IS NULL")
     void invalidateActiveTokens(@Param("userId") Integer userId);
 }

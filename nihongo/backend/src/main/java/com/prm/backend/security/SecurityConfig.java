@@ -1,6 +1,5 @@
 package com.prm.backend.security;
 
-import com.prm.backend.repository.Repositories;
 import com.prm.backend.repository.UserRepository;
 
 import io.jsonwebtoken.*;
