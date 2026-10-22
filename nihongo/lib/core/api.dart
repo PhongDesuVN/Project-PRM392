@@ -20,6 +20,7 @@ class ApiConfig {
   static const String login = '/auth/login';
   static const String forgotPassword = '/auth/forgot-password';
   static const String resetPassword = '/auth/reset-password';
+  static const String dictionarySearch = '/dictionary/search';
 }
 
 /// Loi phat sinh khi goi API, kem message da san sang hien thi cho nguoi dung.
@@ -41,8 +42,8 @@ class ApiException implements Exception {
 /// tu backend thanh [ApiException].
 class ApiClient {
   ApiClient({http.Client? client, String? baseUrl})
-      : _client = client ?? http.Client(),
-        _baseUrl = baseUrl ?? ApiConfig.baseUrl;
+    : _client = client ?? http.Client(),
+      _baseUrl = baseUrl ?? ApiConfig.baseUrl;
 
   final http.Client _client;
 
@@ -52,6 +53,37 @@ class ApiClient {
 
   static const _networkError =
       'Không kết nối được tới server. Kiểm tra backend đã chạy chưa.';
+
+  Future<Map<String, dynamic>> get(
+    String path, {
+    Map<String, String> queryParameters = const {},
+    String? bearerToken,
+  }) async {
+    try {
+      final uri = Uri.parse('$_baseUrl$path').replace(
+        queryParameters: queryParameters.isEmpty ? null : queryParameters,
+      );
+      final response = await _client
+          .get(
+            uri,
+            headers: {
+              'Accept': 'application/json',
+              if (bearerToken != null) 'Authorization': 'Bearer $bearerToken',
+            },
+          )
+          .timeout(ApiConfig.timeout);
+
+      return _handleResponse(response);
+    } on SocketException {
+      throw ApiException(_networkError);
+    } on http.ClientException {
+      throw ApiException(_networkError);
+    } on TimeoutException {
+      throw ApiException('Server phản hồi quá lâu. Vui lòng thử lại.');
+    } on FormatException {
+      throw ApiException('Dữ liệu trả về không hợp lệ.');
+    }
+  }
 
   Future<Map<String, dynamic>> post(
     String path,

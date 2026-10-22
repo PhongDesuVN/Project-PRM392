@@ -4,6 +4,7 @@ import '../../shared/japanese_background.dart';
 import '../../shared/ui.dart';
 import '../auth/auth_service.dart';
 import '../auth/login/login_page.dart';
+import 'dictionary/kanji_handwriting_page.dart';
 import 'dictionary/dictionary_tab.dart';
 import 'home_tab.dart';
 import 'learn_tab.dart';
@@ -45,9 +46,7 @@ class _DashboardPageState extends State<DashboardPage> {
   void _openTopic(LearningTopic topic) {
     Navigator.push(
       context,
-      MaterialPageRoute<void>(
-        builder: (_) => TopicDetailPage(topic: topic),
-      ),
+      MaterialPageRoute<void>(builder: (_) => TopicDetailPage(topic: topic)),
     );
   }
 
@@ -58,11 +57,22 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
+  Future<void> _openHandwritingSearch() async {
+    final kanji = await Navigator.push<String>(
+      context,
+      MaterialPageRoute<String>(builder: (_) => const KanjiHandwritingPage()),
+    );
+    if (!mounted || kanji == null) return;
+    _openDictionary(kanji);
+  }
+
   void _showFeatureNotice(String feature) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        SnackBar(content: Text('$feature sẽ được kết nối trong bước tiếp theo.')),
+        SnackBar(
+          content: Text('$feature sẽ được kết nối trong bước tiếp theo.'),
+        ),
       );
   }
 
@@ -116,14 +126,14 @@ class _DashboardPageState extends State<DashboardPage> {
           onOpenMockExam: () => _selectTab(_mockExamTabIndex),
           onOpenProfile: _openProfile,
           onCameraSearch: () => _showFeatureNotice('Tìm kiếm bằng ảnh'),
-          onHandwritingSearch: () => _showFeatureNotice('Viết Kanji để tìm'),
+          onHandwritingSearch: _openHandwritingSearch,
           onTopicTap: _openTopic,
         );
       case 1:
         return DictionaryTab(
           initialQuery: _dictionaryQuery,
           onCameraSearch: () => _showFeatureNotice('Tìm kiếm bằng ảnh'),
-          onHandwritingSearch: () => _showFeatureNotice('Viết Kanji để tìm'),
+          onHandwritingSearch: _openHandwritingSearch,
         );
       case 2:
         return const TranslationTab();

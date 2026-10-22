@@ -79,4 +79,17 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('Dịch văn bản'), findsOneWidget);
   });
+
+  testWidgets('handwriting search opens the Kanji writing screen', (
+    tester,
+  ) async {
+    await pumpDashboard(tester);
+
+    await tester.tap(find.text('Viết Kanji'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Viết một Kanji để tra cứu'), findsOneWidget);
+    expect(find.byKey(const ValueKey('kanji-writing-canvas')), findsOneWidget);
+    expect(find.text('Nhận dạng chữ viết'), findsOneWidget);
+  });
 }
