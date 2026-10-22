@@ -41,7 +41,8 @@ void main() {
   testWidgets('profile tab shows account info and logout', (tester) async {
     await pumpDashboard(tester);
 
-    await tester.tap(find.text('Hồ sơ'));
+    await tester.tap(find.byTooltip('Hồ sơ'));
+    await tester.pumpAndSettle();
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.text('Tài khoản'), findsOneWidget);
@@ -59,5 +60,23 @@ void main() {
       find.text('Bài học Hiragana, Katakana, Kanji và từ vựng sẽ có ở đây.'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('dashboard exposes dictionary, translation and mock exam', (
+    tester,
+  ) async {
+    await pumpDashboard(tester);
+
+    expect(find.byTooltip('Hồ sơ'), findsOneWidget);
+    expect(find.text('Từ điển'), findsWidgets);
+    expect(find.text('Dịch'), findsWidgets);
+    expect(find.text('Học tập'), findsWidgets);
+    expect(find.text('Thi thử'), findsWidgets);
+    expect(find.text('Chụp ảnh'), findsOneWidget);
+    expect(find.text('Viết Kanji'), findsOneWidget);
+
+    await tester.tap(find.text('Dịch').last);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Dịch văn bản'), findsOneWidget);
   });
 }

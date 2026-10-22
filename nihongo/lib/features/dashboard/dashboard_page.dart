@@ -4,14 +4,16 @@ import '../../shared/japanese_background.dart';
 import '../../shared/ui.dart';
 import '../auth/auth_service.dart';
 import '../auth/login/login_page.dart';
+import 'dictionary/dictionary_tab.dart';
 import 'home_tab.dart';
 import 'learn_tab.dart';
 import 'learning_topic.dart';
+import 'mock_exam/mock_exam_tab.dart';
 import 'profile_tab.dart';
 import 'topic_detail_page.dart';
+import 'translation/translation_tab.dart';
 
-/// Man hinh chinh sau khi dang nhap: 3 tab Trang chu / Hoc / Ho so.
-/// Cac chuc nang hoc se duoc noi vao sau, hien tai chi co khung giao dien.
+/// Man hinh chinh sau dang nhap: kham pha, tu dien, dich, hoc tap va thi thu.
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key, required this.email, this.fullName});
 
@@ -23,10 +25,14 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  static const _learnTabIndex = 1;
+  static const _dictionaryTabIndex = 1;
+  static const _translationTabIndex = 2;
+  static const _learnTabIndex = 3;
+  static const _mockExamTabIndex = 4;
 
   final _authService = AuthService();
   int _currentIndex = 0;
+  String _dictionaryQuery = '';
 
   @override
   void dispose() {
@@ -41,6 +47,47 @@ class _DashboardPageState extends State<DashboardPage> {
       context,
       MaterialPageRoute<void>(
         builder: (_) => TopicDetailPage(topic: topic),
+      ),
+    );
+  }
+
+  void _openDictionary([String query = '']) {
+    setState(() {
+      _dictionaryQuery = query;
+      _currentIndex = _dictionaryTabIndex;
+    });
+  }
+
+  void _showFeatureNotice(String feature) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text('$feature sẽ được kết nối trong bước tiếp theo.')),
+      );
+  }
+
+  void _openProfile() {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => Scaffold(
+          appBar: AppBar(
+            title: const Text('Hồ sơ'),
+            centerTitle: true,
+            backgroundColor: Colors.white,
+            foregroundColor: AppColors.darkText,
+          ),
+          body: JapaneseBackground(
+            showWaves: false,
+            child: SafeArea(
+              child: ProfileTab(
+                email: widget.email,
+                fullName: widget.fullName,
+                onLogout: _logout,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -62,17 +109,28 @@ class _DashboardPageState extends State<DashboardPage> {
       case 0:
         return HomeTab(
           fullName: widget.fullName,
-          onStartLearning: () => _selectTab(_learnTabIndex),
+          onSearch: _openDictionary,
+          onOpenDictionary: () => _openDictionary(),
+          onOpenTranslation: () => _selectTab(_translationTabIndex),
+          onOpenLearning: () => _selectTab(_learnTabIndex),
+          onOpenMockExam: () => _selectTab(_mockExamTabIndex),
+          onOpenProfile: _openProfile,
+          onCameraSearch: () => _showFeatureNotice('Tìm kiếm bằng ảnh'),
+          onHandwritingSearch: () => _showFeatureNotice('Viết Kanji để tìm'),
           onTopicTap: _openTopic,
         );
       case 1:
+        return DictionaryTab(
+          initialQuery: _dictionaryQuery,
+          onCameraSearch: () => _showFeatureNotice('Tìm kiếm bằng ảnh'),
+          onHandwritingSearch: () => _showFeatureNotice('Viết Kanji để tìm'),
+        );
+      case 2:
+        return const TranslationTab();
+      case 3:
         return LearnTab(onTopicTap: _openTopic);
       default:
-        return ProfileTab(
-          email: widget.email,
-          fullName: widget.fullName,
-          onLogout: _logout,
-        );
+        return const MockExamTab();
     }
   }
 
@@ -80,8 +138,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: JapaneseBackground(
-        petalCount: 8,
-        showWaves: false,
+        petalCount: 10,
         child: SafeArea(child: _buildTab()),
       ),
       bottomNavigationBar: NavigationBar(
@@ -91,19 +148,29 @@ class _DashboardPageState extends State<DashboardPage> {
         indicatorColor: AppColors.blue.withValues(alpha: 0.15),
         destinations: const [
           NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home, color: AppColors.blue),
-            label: 'Trang chủ',
+            icon: Icon(Icons.explore_outlined),
+            selectedIcon: Icon(Icons.explore, color: AppColors.blue),
+            label: 'Khám phá',
           ),
           NavigationDestination(
             icon: Icon(Icons.menu_book_outlined),
             selectedIcon: Icon(Icons.menu_book, color: AppColors.blue),
-            label: 'Học',
+            label: 'Từ điển',
           ),
           NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person, color: AppColors.blue),
-            label: 'Hồ sơ',
+            icon: Icon(Icons.g_translate_outlined),
+            selectedIcon: Icon(Icons.g_translate, color: AppColors.blue),
+            label: 'Dịch',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.school_outlined),
+            selectedIcon: Icon(Icons.school, color: AppColors.blue),
+            label: 'Học tập',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.fact_check_outlined),
+            selectedIcon: Icon(Icons.fact_check, color: AppColors.blue),
+            label: 'Thi thử',
           ),
         ],
       ),
