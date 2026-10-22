@@ -81,10 +81,20 @@ class _DashboardPageState extends State<DashboardPage> {
       context,
       MaterialPageRoute<void>(
         builder: (_) => Scaffold(
+          backgroundColor: const Color(0xFFF9FAFC),
           appBar: AppBar(
-            title: const Text('Hồ sơ'),
+            title: const Text(
+              'Hồ sơ cá nhân',
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 18,
+                color: AppColors.darkText,
+              ),
+            ),
             centerTitle: true,
             backgroundColor: Colors.white,
+            elevation: 0,
+            scrolledUnderElevation: 0,
             foregroundColor: AppColors.darkText,
           ),
           body: JapaneseBackground(

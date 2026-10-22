@@ -4,7 +4,50 @@ import '../../shared/nihon_logo.dart';
 import '../../shared/ui.dart';
 import 'learning_topic.dart';
 
-/// Bang kham pha Nihon voi tim kiem nhanh va cac loi vao chinh.
+/// Dữ liệu câu hỏi cho phần Thử thách mỗi ngày
+class _DailyQuizItem {
+  const _DailyQuizItem({
+    required this.kanji,
+    required this.sino,
+    required this.options,
+    required this.correctIndex,
+  });
+
+  final String kanji;
+  final String sino;
+  final List<String> options;
+  final int correctIndex;
+}
+
+const _kDailyQuizzes = <_DailyQuizItem>[
+  _DailyQuizItem(
+    kanji: '写',
+    sino: 'TẢ',
+    options: ['việc đặt hàng', 'sự lái (xe)', 'à à...', '1. sao chép'],
+    correctIndex: 3,
+  ),
+  _DailyQuizItem(
+    kanji: '学',
+    sino: 'HỌC',
+    options: ['học tập', 'ngôi trường', 'bắt đầu', 'mùa hè'],
+    correctIndex: 0,
+  ),
+  _DailyQuizItem(
+    kanji: '生',
+    sino: 'SINH',
+    options: ['con đường', 'mặt trời', 'cuộc sống', 'ngôi sao'],
+    correctIndex: 2,
+  ),
+  _DailyQuizItem(
+    kanji: '行',
+    sino: 'HÀNH',
+    options: ['đi, tiến hành', 'dừng lại', 'nghỉ ngơi', 'nấu ăn'],
+    correctIndex: 0,
+  ),
+];
+
+/// Tab Khám phá: tìm kiếm nhanh phong cách Mazii, phím tắt bảng chữ cái,
+/// từ khóa gần đây, thử thách mỗi ngày và chủ đề học.
 class HomeTab extends StatefulWidget {
   const HomeTab({
     super.key,
@@ -38,10 +81,53 @@ class HomeTab extends StatefulWidget {
 class _HomeTabState extends State<HomeTab> {
   final _searchController = TextEditingController();
 
+  // Danh sách từ khóa tìm kiếm gần đây giống giao diện mẫu
+  final List<String> _recentKeywords = [
+    'セ',
+    '出し',
+    '貸し',
+    '多く',
+    '生活',
+    '商協',
+    '協',
+    '小さい',
+    '火',
+  ];
+
+  // Thử thách mỗi ngày
+  int _quizIndex = 0;
+  int? _selectedAnswerIndex;
+
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _submitSearch([String? text]) {
+    final query = (text ?? _searchController.text).trim();
+    if (query.isNotEmpty) {
+      if (!_recentKeywords.contains(query)) {
+        setState(() {
+          _recentKeywords.insert(0, query);
+          if (_recentKeywords.length > 12) _recentKeywords.removeLast();
+        });
+      }
+      widget.onSearch(query);
+    } else {
+      widget.onOpenDictionary();
+    }
+  }
+
+  void _removeKeyword(String word) {
+    setState(() => _recentKeywords.remove(word));
+  }
+
+  void _nextQuiz() {
+    setState(() {
+      _quizIndex = (_quizIndex + 1) % _kDailyQuizzes.length;
+      _selectedAnswerIndex = null;
+    });
   }
 
   @override
@@ -49,18 +135,23 @@ class _HomeTabState extends State<HomeTab> {
     final name = widget.fullName?.trim();
     final greeting =
         name != null && name.isNotEmpty ? 'Xin chào, $name' : 'Xin chào';
-    final initial = name != null && name.isNotEmpty
-        ? name[0].toUpperCase()
-        : 'N';
+    final initial = name != null && name.isNotEmpty ? name[0].toUpperCase() : 'N';
+    final quiz = _kDailyQuizzes[_quizIndex];
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(18, 8, 18, 28),
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
       children: [
+        // ===================================================================
+        // 1. TOP BAR: [TRÌNH ĐỘ ↕] --------- [✨ 100%] [AVATAR HỒ SƠ]
+        // (Đã bỏ bánh răng cài đặt theo yêu cầu)
+        // ===================================================================
         Row(
           children: [
+            // Logo Nihon
             SizedBox(
-              width: 142,
-              height: 44,
+              width: 125,
+              height: 40,
               child: FittedBox(
                 alignment: Alignment.centerLeft,
                 fit: BoxFit.contain,
@@ -68,350 +159,188 @@ class _HomeTabState extends State<HomeTab> {
               ),
             ),
             const Spacer(),
+
+            // Badge tiến độ 100%
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.95),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.border),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(
+                    Icons.auto_awesome,
+                    size: 16,
+                    color: Color(0xFF8E44AD),
+                  ),
+                  SizedBox(width: 5),
+                  Text(
+                    '100%',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.darkText,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+
+            // Nút Hồ sơ cá nhân
             IconButton(
               tooltip: 'Hồ sơ',
               onPressed: widget.onOpenProfile,
               icon: CircleAvatar(
-                radius: 18,
+                radius: 19,
                 backgroundColor: AppColors.blue.withValues(alpha: 0.15),
                 child: Text(
                   initial,
                   style: const TextStyle(
                     color: AppColors.blue,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 14),
-        Text(
-          greeting,
-          style: const TextStyle(
-            color: AppColors.darkText,
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 4),
-        const Text(
-          'Tra cứu, luyện tập và tiến bộ mỗi ngày.',
-          style: TextStyle(color: AppColors.placeholder, fontSize: 14),
-        ),
-        const SizedBox(height: 18),
-        _QuickSearchPanel(
-          controller: _searchController,
-          onSearch: () => widget.onSearch(_searchController.text),
-          onCameraSearch: widget.onCameraSearch,
-          onHandwritingSearch: widget.onHandwritingSearch,
-          onOpenDictionary: widget.onOpenDictionary,
-        ),
-        const SizedBox(height: 24),
-        const _SectionHeading(
-          title: 'Không gian học của bạn',
-          subtitle: 'Chọn một hoạt động để bắt đầu',
-        ),
         const SizedBox(height: 12),
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 10,
-          childAspectRatio: 1.6,
+
+        // Lời chào hiển thị thân thiện (giúp test check được greeting)
+        Row(
           children: [
-            _FeatureTile(
-              title: 'Từ điển',
-              subtitle: 'Tra từ Nhật - Việt',
-              icon: Icons.menu_book_rounded,
-              color: const Color(0xFF2879C8),
-              onTap: widget.onOpenDictionary,
-            ),
-            _FeatureTile(
-              title: 'Dịch',
-              subtitle: 'Câu và đoạn văn',
-              icon: Icons.g_translate_rounded,
-              color: const Color(0xFF2F8B72),
-              onTap: widget.onOpenTranslation,
-            ),
-            _FeatureTile(
-              title: 'Học tập',
-              subtitle: 'Bài học theo chủ đề',
-              icon: Icons.auto_stories_rounded,
-              color: const Color(0xFFD37736),
-              onTap: widget.onOpenLearning,
-            ),
-            _FeatureTile(
-              title: 'Thi thử',
-              subtitle: 'Ôn luyện JLPT',
-              icon: Icons.fact_check_rounded,
-              color: const Color(0xFF7C63B8),
-              onTap: widget.onOpenMockExam,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    greeting,
+                    style: const TextStyle(
+                      color: AppColors.darkText,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  const Text(
+                    'Tra cứu, luyện tập và tiến bộ mỗi ngày.',
+                    style: TextStyle(
+                      color: AppColors.placeholder,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
-        const SizedBox(height: 22),
-        _WordOfDayCard(onStartLearning: widget.onOpenLearning),
-        const SizedBox(height: 24),
-        _SectionHeading(
-          title: 'Chủ đề học',
-          subtitle: 'Lộ trình từ nền tảng đến JLPT',
-          trailing: TextButton(
-            onPressed: widget.onOpenLearning,
-            child: const Text('Xem tất cả'),
-          ),
-        ),
-        const SizedBox(height: 12),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: learningTopics.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 1.25,
-          ),
-          itemBuilder: (context, index) {
-            final topic = learningTopics[index];
-            return TopicCard(
-              topic: topic,
-              onTap: () => widget.onTopicTap(topic),
-            );
-          },
-        ),
-      ],
-    );
-  }
-}
+        const SizedBox(height: 14),
 
-class _QuickSearchPanel extends StatelessWidget {
-  const _QuickSearchPanel({
-    required this.controller,
-    required this.onSearch,
-    required this.onCameraSearch,
-    required this.onHandwritingSearch,
-    required this.onOpenDictionary,
-  });
-
-  final TextEditingController controller;
-  final VoidCallback onSearch;
-  final VoidCallback onCameraSearch;
-  final VoidCallback onHandwritingSearch;
-  final VoidCallback onOpenDictionary;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.96),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Tìm nhanh',
-            style: TextStyle(
-              color: AppColors.darkText,
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 10),
-          TextField(
-            controller: controller,
-            textInputAction: TextInputAction.search,
-            onSubmitted: (_) => onSearch(),
-            decoration: InputDecoration(
-              hintText: 'Nhập từ hoặc câu tiếng Nhật',
-              prefixIcon: const Icon(Icons.search, color: AppColors.blue),
-              suffixIcon: IconButton(
-                tooltip: 'Mở từ điển',
-                onPressed: onSearch,
-                icon: const Icon(Icons.arrow_forward_rounded),
-              ),
-              filled: true,
-              fillColor: const Color(0xFFF7F9FC),
-              contentPadding: const EdgeInsets.symmetric(vertical: 12),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: _SearchToolButton(
-                  icon: Icons.camera_alt_outlined,
-                  label: 'Chụp ảnh',
-                  onPressed: onCameraSearch,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _SearchToolButton(
-                  icon: Icons.gesture_rounded,
-                  label: 'Viết Kanji',
-                  onPressed: onHandwritingSearch,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _SearchToolButton(
-                  icon: Icons.translate_rounded,
-                  label: 'Dịch câu',
-                  onPressed: onOpenDictionary,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SearchToolButton extends StatelessWidget {
-  const _SearchToolButton({
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return OutlinedButton.icon(
-      onPressed: onPressed,
-      icon: Icon(icon, size: 17),
-      label: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
-      style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.darkText,
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
-        side: const BorderSide(color: AppColors.border),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
-  }
-}
-
-class _SectionHeading extends StatelessWidget {
-  const _SectionHeading({
-    required this.title,
-    required this.subtitle,
-    this.trailing,
-  });
-
-  final String title;
-  final String subtitle;
-  final Widget? trailing;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  color: AppColors.darkText,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: const TextStyle(
-                  color: AppColors.placeholder,
-                  fontSize: 13,
-                ),
-              ),
-            ],
-          ),
-        ),
-        if (trailing != null) trailing!,
-      ],
-    );
-  }
-}
-
-class _FeatureTile extends StatelessWidget {
-  const _FeatureTile({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.color,
-    required this.onTap,
-  });
-
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(13),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(13),
-        child: Container(
-          padding: const EdgeInsets.all(12),
+        // ===================================================================
+        // 2. KHUNG TÌM KIẾM MAZII STYLE:
+        // Input [🔍 Nhập Tiếng Nhật cần tìm] [JA  VI]
+        // Công cụ [📷 Chụp ảnh]  [夂 Tra bộ thủ]  [✏️ Viết Kanji]
+        // (Đã bỏ micro nói theo yêu cầu)
+        // ===================================================================
+        Container(
           decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.98),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(color: AppColors.border),
-            borderRadius: BorderRadius.circular(13),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(11),
-                ),
-                child: Icon(icon, color: color, size: 21),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.blue.withValues(alpha: 0.08),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            ],
+          ),
+          child: Column(
+            children: [
+              // Ô nhập từ khoá
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 10, 10, 8),
+                child: Row(
                   children: [
-                    Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.darkText,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                    const Icon(
+                      Icons.search_rounded,
+                      color: Color(0xFF6C5CE7),
+                      size: 24,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        textInputAction: TextInputAction.search,
+                        onSubmitted: _submitSearch,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: AppColors.darkText,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        decoration: const InputDecoration(
+                          hintText: 'Nhập Tiếng Nhật cần tìm',
+                          hintStyle: TextStyle(
+                            color: AppColors.placeholder,
+                            fontSize: 15,
+                          ),
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: EdgeInsets.symmetric(vertical: 8),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.placeholder,
-                        fontSize: 11,
+                  ],
+                ),
+              ),
+              const Divider(height: 1, thickness: 0.8),
+              // Hàng công cụ tìm kiếm: Chụp ảnh | Tra bộ thủ | Viết Kanji
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _SearchToolSquareButton(
+                        icon: Icons.camera_alt_outlined,
+                        iconColor: const Color(0xFF0984E3),
+                        label: 'Chụp ảnh',
+                        onTap: widget.onCameraSearch,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _SearchToolSquareButton(
+                        customIcon: const Text(
+                          '夂',
+                          style: TextStyle(
+                            fontSize: 19,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF00B894),
+                          ),
+                        ),
+                        label: 'Tra bộ thủ',
+                        onTap: widget.onOpenDictionary,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _SearchToolSquareButton(
+                        icon: Icons.edit_note_rounded,
+                        iconColor: const Color(0xFFE17055),
+                        label: 'Viết Kanji',
+                        onTap: widget.onHandwritingSearch,
                       ),
                     ),
                   ],
@@ -420,62 +349,487 @@ class _FeatureTile extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(height: 14),
+
+        // ===================================================================
+        // 3. SHORTCUTS: [ Bảng chữ cái あ ] & [ Tiện ích mở rộng ⊞ ]
+        // ===================================================================
+        Row(
+          children: [
+            Expanded(
+              child: _QuickPillButton(
+                title: 'Bảng chữ cái',
+                trailingWidget: Container(
+                  width: 24,
+                  height: 24,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE23832).withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Text(
+                    'あ',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFFE23832),
+                    ),
+                  ),
+                ),
+                onTap: () => widget.onTopicTap(learningTopics[0]),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _QuickPillButton(
+                title: 'Tiện ích mở rộng',
+                trailingWidget: const Icon(
+                  Icons.grid_view_rounded,
+                  size: 19,
+                  color: AppColors.darkText,
+                ),
+                onTap: widget.onOpenMockExam,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 18),
+
+        // ===================================================================
+        // 4. PHẦN: TÌM KIẾM GẦN ĐÂY (Với các tag có nút xoá '✕')
+        // ===================================================================
+        _buildSectionHeader(
+          title: 'Tìm kiếm gần đây',
+          onTap: widget.onOpenDictionary,
+        ),
+        const SizedBox(height: 10),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.96),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: _recentKeywords.isEmpty
+              ? const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Center(
+                    child: Text(
+                      'Chưa có từ khoá tìm kiếm nào',
+                      style: TextStyle(color: AppColors.placeholder, fontSize: 13),
+                    ),
+                  ),
+                )
+              : Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _recentKeywords.map((word) {
+                    return InkWell(
+                      onTap: () => _submitSearch(word),
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: AppColors.border.withValues(alpha: 0.8),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              word,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.darkText,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            GestureDetector(
+                              onTap: () => _removeKeyword(word),
+                              child: const Icon(
+                                Icons.close_rounded,
+                                size: 14,
+                                color: AppColors.placeholder,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+        ),
+        const SizedBox(height: 20),
+
+        // ===================================================================
+        // 5. PHẦN: THỬ THÁCH MỖI NGÀY (Quiz Kanji tương tác với 4 đáp án)
+        // ===================================================================
+        _buildSectionHeader(
+          title: 'Thử thách mỗi ngày',
+          onTap: _nextQuiz,
+        ),
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.98),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.border),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Dòng Kanji câu hỏi & nút đổi từ khác
+              Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.blue.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      quiz.kanji,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.blue,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    '「${quiz.sino}」',
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.darkText,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    tooltip: 'Đổi câu hỏi',
+                    onPressed: _nextQuiz,
+                    icon: const Icon(
+                      Icons.refresh_rounded,
+                      color: AppColors.placeholder,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+
+              // 4 ô đáp án lựa chọn (2x2 grid)
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: quiz.options.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                  childAspectRatio: 2.3,
+                ),
+                itemBuilder: (context, index) {
+                  final optionText = quiz.options[index];
+                  final isSelected = _selectedAnswerIndex == index;
+                  final isCorrect = index == quiz.correctIndex;
+
+                  Color bgColor = const Color(0xFFF8FAFC);
+                  Color borderColor = AppColors.border;
+                  Color textColor = AppColors.darkText;
+
+                  if (_selectedAnswerIndex != null) {
+                    if (isCorrect) {
+                      bgColor = const Color(0xFFE8F8F5);
+                      borderColor = const Color(0xFF00B894);
+                      textColor = const Color(0xFF00B894);
+                    } else if (isSelected) {
+                      bgColor = const Color(0xFFFDEDEC);
+                      borderColor = const Color(0xFFE74C3C);
+                      textColor = const Color(0xFFE74C3C);
+                    }
+                  }
+
+                  return InkWell(
+                    onTap: () {
+                      setState(() => _selectedAnswerIndex = index);
+                    },
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(
+                        color: bgColor,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: borderColor),
+                      ),
+                      child: Text(
+                        optionText,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: textColor,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // ===================================================================
+        // 6. PHẦN: KHÁM PHÁ NIHONGO / BẮT ĐẦU HỌC
+        // ===================================================================
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: const LinearGradient(
+              colors: [Color(0xFFEBF4FF), Color(0xFFF5F9FF)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            border: Border.all(color: AppColors.blue.withValues(alpha: 0.2)),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Cách học cùng Nihongo',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.darkText,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Bốn việc nên biết để học hiệu quả trong 2 phút',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.placeholder,
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    FilledButton(
+                      onPressed: widget.onOpenLearning,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.blue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Bắt đầu học',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.blue.withValues(alpha: 0.15),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.auto_stories_rounded,
+                  color: AppColors.blue,
+                  size: 36,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader({
+    required String title,
+    String? trailingText,
+    VoidCallback? onTap,
+  }) {
+    return Row(
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            color: AppColors.darkText,
+            fontSize: 17,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const Spacer(),
+        if (trailingText != null)
+          TextButton(
+            onPressed: onTap,
+            child: Text(
+              trailingText,
+              style: const TextStyle(
+                color: AppColors.blue,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          )
+        else
+          IconButton(
+            onPressed: onTap,
+            icon: const Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.placeholder,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Nút vuông trong hàng công cụ tìm kiếm: Chụp ảnh, Tra bộ thủ, Viết Kanji
+class _SearchToolSquareButton extends StatelessWidget {
+  const _SearchToolSquareButton({
+    this.icon,
+    this.customIcon,
+    this.iconColor,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData? icon;
+  final Widget? customIcon;
+  final Color? iconColor;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: const Color(0xFFF8FAFC),
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.border.withValues(alpha: 0.6)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (customIcon != null)
+                customIcon!
+              else if (icon != null)
+                Icon(icon, size: 21, color: iconColor ?? AppColors.blue),
+              const SizedBox(height: 5),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.darkText,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
 
-class _WordOfDayCard extends StatelessWidget {
-  const _WordOfDayCard({required this.onStartLearning});
+/// Nút dạng viên thuốc rộng (Bảng chữ cái, Tiện ích mở rộng)
+class _QuickPillButton extends StatelessWidget {
+  const _QuickPillButton({
+    required this.title,
+    required this.trailingWidget,
+    required this.onTap,
+  });
 
-  final VoidCallback onStartLearning;
+  final String title;
+  final Widget trailingWidget;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
+    return Material(
+      color: Colors.white.withValues(alpha: 0.96),
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(14),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF4F96E8), Color(0xFF1670D2)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Từ của ngày',
-            style: TextStyle(color: Colors.white70, fontSize: 13),
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            '勉強',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 34,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const Text(
-            'べんきょう · benkyou · học tập',
-            style: TextStyle(color: Colors.white, fontSize: 15),
-          ),
-          const SizedBox(height: 14),
-          FilledButton.icon(
-            onPressed: onStartLearning,
-            icon: const Icon(Icons.play_arrow_rounded),
-            label: const Text('Bắt đầu học'),
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: AppColors.blue,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(7),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.border),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
               ),
-            ),
+            ],
           ),
-        ],
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.darkText,
+                ),
+              ),
+              trailingWidget,
+            ],
+          ),
+        ),
       ),
     );
   }

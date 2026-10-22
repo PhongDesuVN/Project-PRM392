@@ -1,68 +1,87 @@
 import 'package:flutter/material.dart';
 
-import '../../shared/ui.dart';
+import 'learn/library/library_view.dart';
+import 'learn/notebook/my_notebook_view.dart';
+import 'learn/widgets/learn_header.dart';
+import 'learn/widgets/learn_tab_bar.dart';
 import 'learning_topic.dart';
 
-/// Tab Hoc: danh sach day du cac chu de. Moi chu de se mo man hinh
-/// bai hoc rieng khi chuc nang duoc lam.
-class LearnTab extends StatelessWidget {
-  const LearnTab({super.key, required this.onTopicTap});
+/// Màn hình chính của phần "Học tập":
+/// - Header: "Học tập"
+/// - Thanh tab bar trên cùng chỉ gồm 2 mục: "Sổ tay của tôi" & "Thư viện"
+/// - Nội dung chuyển đổi mượt mà giữa Sổ tay của tôi và Thư viện.
+class LearnTab extends StatefulWidget {
+  const LearnTab({
+    super.key,
+    required this.onTopicTap,
+    this.initialTabIndex = 0,
+  });
 
   final ValueChanged<LearningTopic> onTopicTap;
+  final int initialTabIndex;
+
+  @override
+  State<LearnTab> createState() => _LearnTabState();
+}
+
+class _LearnTabState extends State<LearnTab> {
+  late int _selectedTab;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedTab = widget.initialTabIndex;
+  }
+
+  void _onTabChanged(int index) {
+    if (_selectedTab != index) {
+      setState(() => _selectedTab = index);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-      children: [
-        const Text(
-          'Học',
-          style: TextStyle(
-            color: AppColors.blue,
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header tiêu đề và nút Nâng cấp
+          const LearnHeader(),
+          const SizedBox(height: 14),
+
+          // Thanh tab bar chọn Sổ tay / Thư viện
+          LearnTopTabBar(
+            selectedIndex: _selectedTab,
+            onTabChanged: _onTabChanged,
           ),
-        ),
-        const SizedBox(height: 4),
-        const Text(
-          'Bài học Hiragana, Katakana, Kanji và từ vựng sẽ có ở đây.',
-          style: TextStyle(color: AppColors.darkText, fontSize: 15),
-        ),
-        const SizedBox(height: 16),
-        for (final topic in learningTopics)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Material(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              child: ListTile(
-                onTap: () => onTopicTap(topic),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: const BorderSide(color: AppColors.border),
-                ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                leading: TopicSymbol(topic: topic),
-                title: Text(
-                  topic.title,
-                  style: const TextStyle(
-                    color: AppColors.darkText,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                subtitle: Text(
-                  topic.subtitle,
-                  style: const TextStyle(color: AppColors.placeholder),
-                ),
-                trailing: const Icon(
-                  Icons.chevron_right,
-                  color: AppColors.placeholder,
-                ),
-              ),
+          const SizedBox(height: 16),
+
+          // Nội dung hiển thị theo tab
+          Expanded(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: _selectedTab == 0
+                  ? MyNotebookView(
+                      key: const ValueKey('my_notebook_view'),
+                      onReviewNotebook: () {
+                        ScaffoldMessenger.of(context)
+                          ..hideCurrentSnackBar()
+                          ..showSnackBar(
+                            const SnackBar(
+                              content: Text('Bắt đầu buổi ôn tập sổ tay!'),
+                            ),
+                          );
+                      },
+                    )
+                  : LibraryView(
+                      key: const ValueKey('library_view'),
+                      onTopicTap: widget.onTopicTap,
+                    ),
             ),
           ),
-      ],
+        ],
+      ),
     );
   }
 }

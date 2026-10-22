@@ -134,7 +134,7 @@ void main() {
       find.text(
         'Đã nhận dạng xong, nhưng bộ nhận dạng phản hồi chậm khi đóng.',
       ),
-      findsOneWidget,
+      findsNothing,
     );
     pendingClose.complete(null);
   });

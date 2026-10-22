@@ -22,16 +22,14 @@ void main() {
     await pumpDashboard(tester);
 
     expect(find.text('Xin chào, Nguyen Van A'), findsOneWidget);
-    expect(find.text('Hiragana'), findsOneWidget);
-    expect(find.text('Katakana'), findsOneWidget);
-    expect(find.text('Kanji'), findsOneWidget);
+    expect(find.text('Bảng chữ cái'), findsOneWidget);
   });
 
   testWidgets('tapping a topic opens the lesson detail screen', (tester) async {
     await pumpDashboard(tester);
 
-    final hiraganaTarget = find.byKey(const ValueKey('topic_Hiragana'));
-    await tester.tap(hiraganaTarget);
+    final alphabetTarget = find.text('Bảng chữ cái');
+    await tester.tap(alphabetTarget);
     await tester.pumpAndSettle();
 
     expect(find.text('Hiragana'), findsWidgets);
@@ -56,10 +54,20 @@ void main() {
     await tester.tap(find.text('Bắt đầu học'));
     await tester.pump(const Duration(milliseconds: 500));
 
-    expect(
-      find.text('Bài học Hiragana, Katakana, Kanji và từ vựng sẽ có ở đây.'),
-      findsOneWidget,
-    );
+    expect(find.text('Tổng quan'), findsOneWidget);
+    expect(find.text('Sổ tay của tôi'), findsOneWidget);
+    expect(find.text('Thư viện'), findsOneWidget);
+    expect(find.text('Ôn tập sổ tay'), findsOneWidget);
+
+    // Switch to Thư viện tab
+    await tester.tap(find.text('Thư viện'));
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('Bảng chữ cái'), findsOneWidget);
+    expect(find.text('Hira'), findsOneWidget);
+    expect(find.text('Kata'), findsOneWidget);
+    expect(find.text('JLPT'), findsOneWidget);
+    expect(find.text('Chuyên ngành'), findsOneWidget);
   });
 
   testWidgets('dashboard exposes dictionary, translation and mock exam', (
