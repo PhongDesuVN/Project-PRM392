@@ -22,6 +22,10 @@ class ApiConfig {
   static const String resetPassword = '/auth/reset-password';
   static const String dictionarySearch = '/dictionary/search';
   static const String alphabet = '/alphabet';
+  static const String topics = '/topics';
+  static const String notebookSync = '/notebook/sync';
+  static const String notebookStats = '/notebook/stats';
+  static const String notebookWords = '/notebook/words';
 }
 
 /// Loi phat sinh khi goi API, kem message da san sang hien thi cho nguoi dung.

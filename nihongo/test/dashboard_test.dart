@@ -7,8 +7,12 @@ import 'package:nihongo/features/dashboard/dashboard_page.dart';
 // thay vi pumpAndSettle.
 void main() {
   Future<void> pumpDashboard(WidgetTester tester) async {
-    tester.binding.window.physicalSizeTestValue = const Size(1280, 2000);
-    tester.binding.window.devicePixelRatioTestValue = 1.0;
+    tester.view.physicalSize = const Size(1280, 2000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
     await tester.pumpWidget(
       const MaterialApp(
