@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../shared/ui.dart';
+import '../alphabet/alphabet_page.dart';
+import '../alphabet/models/alphabet_models.dart';
 import 'learning_topic.dart';
 
 class TopicDetailPage extends StatelessWidget {
@@ -211,6 +213,28 @@ class TopicDetailPage extends StatelessWidget {
               height: 52,
               child: FilledButton(
                 onPressed: () {
+                  if (topic.title.toLowerCase().contains('hira')) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (_) => const AlphabetPage(
+                          script: AlphabetScript.hiragana,
+                        ),
+                      ),
+                    );
+                    return;
+                  }
+                  if (topic.title.toLowerCase().contains('kata')) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (_) => const AlphabetPage(
+                          script: AlphabetScript.katakana,
+                        ),
+                      ),
+                    );
+                    return;
+                  }
                   ScaffoldMessenger.of(context)
                     ..hideCurrentSnackBar()
                     ..showSnackBar(

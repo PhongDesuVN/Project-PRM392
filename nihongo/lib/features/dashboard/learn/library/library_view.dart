@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/ui.dart';
+import '../../../alphabet/alphabet_page.dart';
+import '../../../alphabet/models/alphabet_models.dart';
 import '../../learning_topic.dart';
 import 'widgets/alphabet_card.dart';
 import 'widgets/library_topic_card.dart';
@@ -11,22 +13,19 @@ import 'widgets/library_topic_card.dart';
 /// - Chuyên ngành (có nút Xem thêm): Xe cộ, Vật liệu điện và nước, Thợ cơ khí, Lối sống
 /// - Khác: Giao tiếp hàng ngày, Du lịch & Ẩm thực
 class LibraryView extends StatelessWidget {
-  const LibraryView({
-    super.key,
-    this.onTopicTap,
-  });
+  const LibraryView({super.key, this.onTopicTap});
 
   final ValueChanged<LearningTopic>? onTopicTap;
 
   void _handleTopicClick(BuildContext context, String title, String subtitle) {
     // Nếu trùng với topic có sẵn trong hệ thống thì mở bài học chi tiết
     final matchedTopic = learningTopics.cast<LearningTopic?>().firstWhere(
-          (t) =>
-              t?.title.toLowerCase() == title.toLowerCase() ||
-              (title == 'Hira' && t?.title == 'Hiragana') ||
-              (title == 'Kata' && t?.title == 'Katakana'),
-          orElse: () => null,
-        );
+      (t) =>
+          t?.title.toLowerCase() == title.toLowerCase() ||
+          (title == 'Hira' && t?.title == 'Hiragana') ||
+          (title == 'Kata' && t?.title == 'Katakana'),
+      orElse: () => null,
+    );
 
     if (matchedTopic != null && onTopicTap != null) {
       onTopicTap!(matchedTopic);
@@ -68,7 +67,15 @@ class LibraryView extends StatelessWidget {
                 borderColor: const Color(0xFF90CAF9),
                 badgeColor: const Color(0xFF1565C0),
                 badgeRotation: -0.15,
-                onTap: () => _handleTopicClick(context, 'Hira', '46 chữ cái'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (_) =>
+                          const AlphabetPage(script: AlphabetScript.hiragana),
+                    ),
+                  );
+                },
               ),
             ),
             const SizedBox(width: 14),
@@ -80,7 +87,15 @@ class LibraryView extends StatelessWidget {
                 borderColor: const Color(0xFFFFCC80),
                 badgeColor: const Color(0xFFFFA000),
                 badgeRotation: 0.15,
-                onTap: () => _handleTopicClick(context, 'Kata', '46 chữ cái'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (_) =>
+                          const AlphabetPage(script: AlphabetScript.katakana),
+                    ),
+                  );
+                },
               ),
             ),
           ],
@@ -104,8 +119,7 @@ class LibraryView extends StatelessWidget {
               child: LibraryTopicCard(
                 title: 'Từ vựng N4',
                 itemCountText: '523 từ',
-                onTap: () =>
-                    _handleTopicClick(context, 'Từ vựng N4', '523 từ'),
+                onTap: () => _handleTopicClick(context, 'Từ vựng N4', '523 từ'),
               ),
             ),
             const SizedBox(width: 12),
@@ -126,8 +140,7 @@ class LibraryView extends StatelessWidget {
               child: LibraryTopicCard(
                 title: 'Hán tự N4',
                 itemCountText: '167 từ',
-                onTap: () =>
-                    _handleTopicClick(context, 'Hán tự N4', '167 từ'),
+                onTap: () => _handleTopicClick(context, 'Hán tự N4', '167 từ'),
               ),
             ),
             const SizedBox(width: 12),
@@ -135,8 +148,7 @@ class LibraryView extends StatelessWidget {
               child: LibraryTopicCard(
                 title: 'Từ vựng N5',
                 itemCountText: '571 từ',
-                onTap: () =>
-                    _handleTopicClick(context, 'Từ vựng N5', '571 từ'),
+                onTap: () => _handleTopicClick(context, 'Từ vựng N5', '571 từ'),
               ),
             ),
           ],
@@ -162,7 +174,9 @@ class LibraryView extends StatelessWidget {
                   ..hideCurrentSnackBar()
                   ..showSnackBar(
                     const SnackBar(
-                      content: Text('Danh sách chuyên ngành mở rộng đang cập nhật.'),
+                      content: Text(
+                        'Danh sách chuyên ngành mở rộng đang cập nhật.',
+                      ),
                     ),
                   );
               },
@@ -196,8 +210,11 @@ class LibraryView extends StatelessWidget {
               child: LibraryTopicCard(
                 title: 'Vật liệu điện và nước',
                 itemCountText: '6 mục',
-                onTap: () =>
-                    _handleTopicClick(context, 'Vật liệu điện và nước', '6 mục'),
+                onTap: () => _handleTopicClick(
+                  context,
+                  'Vật liệu điện và nước',
+                  '6 mục',
+                ),
               ),
             ),
           ],

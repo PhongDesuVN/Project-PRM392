@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../shared/nihon_logo.dart';
 import '../../shared/ui.dart';
+import '../alphabet/alphabet_page.dart';
+import '../alphabet/models/alphabet_models.dart';
 import 'learning_topic.dart';
 
 /// Dữ liệu câu hỏi cho phần Thử thách mỗi ngày

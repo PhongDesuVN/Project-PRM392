@@ -1,11 +1,14 @@
+C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\service\AlphabetService.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\exception\GlobalExceptionHandler.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\controller\DictionaryController.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\repository\DictionaryRepository.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\dto\auth\AuthDtos.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\dto\dictionary\DictionaryDtos.java
+C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\controller\AlphabetController.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\BackendApplication.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\controller\AuthController.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\service\DictionaryService.java
+C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\dto\alphabet\AlphabetDtos.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\security\SecurityConfig.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\repository\UserRepository.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\repository\ResetTokenRepository.java
