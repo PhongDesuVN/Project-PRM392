@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../shared/japanese_background.dart';
 import '../../shared/ui.dart';
 import '../auth/auth_service.dart';
@@ -114,6 +116,10 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Future<void> _logout() async {
     await _authService.logout();
+    try {
+      await GoogleSignIn().signOut();
+      await FirebaseAuth.instance.signOut();
+    } catch (_) {}
     if (!mounted) return;
     Navigator.pushAndRemoveUntil(
       context,

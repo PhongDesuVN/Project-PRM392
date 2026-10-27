@@ -77,6 +77,12 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() => _isLoading = true);
     try {
+      // Đảm bảo xoá session cũ để Google luôn hiển thị popup chọn tài khoản
+      try {
+        await _googleSignIn.signOut();
+        await _auth.signOut();
+      } catch (_) {}
+
       // 1. Mở popup đăng nhập tài khoản Google
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
@@ -122,7 +128,7 @@ class _LoginPageState extends State<LoginPage> {
     User? firebaseUser,
   ) async {
     // 10.0.2.2 trỏ về localhost nếu chạy trên Android Emulator
-    final url = Uri.parse('${ApiConfig.baseUrl}/api/auth/google');
+    final url = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.googleLogin}');
 
     try {
       final response = await http

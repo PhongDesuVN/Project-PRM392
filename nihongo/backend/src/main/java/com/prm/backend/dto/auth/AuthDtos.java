@@ -62,6 +62,12 @@ public final class AuthDtos {
     ) {
     }
 
+    public record GoogleLoginRequest(
+            @NotBlank(message = "idToken không được để trống")
+            String idToken
+    ) {
+    }
+
     // ----- Response -----
 
     public record AuthResponse(

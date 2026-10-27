@@ -12,6 +12,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseToken;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
@@ -83,6 +86,46 @@ public class AuthService {
         }
 
         return toAuthResponse(user);
+    }
+
+    @Transactional
+    public AuthResponse googleLogin(GoogleLoginRequest request) {
+        try {
+            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(request.idToken());
+            String email = normalizeEmail(decodedToken.getEmail());
+            String name = decodedToken.getName();
+            String picture = decodedToken.getPicture();
+
+            User user = userRepository.findByEmail(email).orElseGet(() -> {
+                User newUser = new User();
+                newUser.setEmail(email);
+                newUser.setFullName(name != null && !name.isBlank() ? name.trim() : email);
+                newUser.setAvatarUrl(picture);
+                newUser.setRole(User.Role.user);
+                return userRepository.save(newUser);
+            });
+
+            boolean updated = false;
+            if ((user.getFullName() == null || user.getFullName().isBlank()) && name != null && !name.isBlank()) {
+                user.setFullName(name.trim());
+                updated = true;
+            }
+            if (user.getAvatarUrl() == null && picture != null) {
+                user.setAvatarUrl(picture);
+                updated = true;
+            }
+            if (updated) {
+                user = userRepository.save(user);
+            }
+
+            return toAuthResponse(user);
+        } catch (FirebaseAuthException e) {
+            log.error("Firebase verifyIdToken failed: {}", e.getMessage());
+            throw new BusinessException("Xác thực Google không hợp lệ: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Google login error: {}", e.getMessage(), e);
+            throw new BusinessException("Đăng nhập Google thất bại: " + e.getMessage());
+        }
     }
 
     /**
