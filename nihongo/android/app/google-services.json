@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "854802733120",
+    "project_id": "nihon-ddea7",
+    "storage_bucket": "nihon-ddea7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:854802733120:android:b66ae112b94aa290b727a5",
+        "android_client_info": {
+          "package_name": "com.example.nihongo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDaZh44nqLz7yTBUpjgS44uXKKQJL18XFw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
