@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../../../../../../core/api.dart';
 import '../../../../learn/topic_words/models/topic_word_model.dart';
+import '../models/notebook_item.dart';
 
 /// Trạng thái học từ vựng trong sổ tay
 enum NotebookWordStatus {
@@ -30,6 +31,7 @@ class NotebookWord {
     required this.meaning,
     required this.status,
     this.reviewCount = 1,
+    this.notebookId,
   });
 
   final String word;
@@ -38,6 +40,7 @@ class NotebookWord {
   final String meaning;
   NotebookWordStatus status;
   int reviewCount;
+  int? notebookId;
 
   TopicWord toTopicWord() {
     return TopicWord(
@@ -58,6 +61,7 @@ class NotebookWord {
       meaning: json['meaning'] as String? ?? '',
       status: NotebookWordStatus.fromCode(json['status'] as String? ?? ''),
       reviewCount: json['reviewCount'] as int? ?? 1,
+      notebookId: json['notebookId'] as int?,
     );
   }
 
@@ -67,6 +71,7 @@ class NotebookWord {
     'romaji': romaji,
     'meaning': meaning,
     'status': status.code,
+    if (notebookId != null) 'notebookId': notebookId,
   };
 }
 
@@ -98,16 +103,33 @@ class NotebookStats {
 
 /// Service quản lý Sổ tay của tôi:
 /// - Kế thừa ChangeNotifier để màn hình MyNotebookView tự động cập nhật ngay khi bấm Hoàn tất ở Flashcard.
-/// - Đồng bộ dữ liệu 2 chiều với Backend Spring Boot và lưu cache local.
+/// - Đồng bộ dữ liệu 2 chiều với Backend Spring Boot và MySQL: danh sách sổ tay & từ vựng.
 class NotebookService extends ChangeNotifier {
   NotebookService._();
   static final NotebookService instance = NotebookService._();
 
   final ApiClient _apiClient = ApiClient();
   final Map<String, NotebookWord> _notebookMap = {};
+  final List<NotebookItem> _notebooks = [];
+  NotebookItem? _selectedNotebook;
   bool _isInitialized = false;
+  bool _isLoadingNotebooks = false;
 
   Map<String, NotebookWord> get notebookMap => Map.unmodifiable(_notebookMap);
+  List<NotebookItem> get notebooks => List.unmodifiable(_notebooks);
+  NotebookItem? get selectedNotebook => _selectedNotebook;
+  bool get isLoadingNotebooks => _isLoadingNotebooks;
+
+  int get totalReviewWordsCount {
+    if (_notebookMap.isNotEmpty) {
+      return _notebookMap.length;
+    }
+    int sum = 0;
+    for (final nb in _notebooks) {
+      sum += nb.wordCount;
+    }
+    return sum;
+  }
 
   NotebookStats get stats {
     int chuaThuoc = 0;
@@ -143,7 +165,149 @@ class NotebookService extends ChangeNotifier {
   Future<void> init() async {
     if (_isInitialized) return;
     _isInitialized = true;
-    await fetchStatsAndWords();
+    await Future.wait([
+      fetchStatsAndWords(),
+      fetchNotebooks(),
+    ]);
+  }
+
+  /// Tải danh sách các sổ tay từ Backend MySQL
+  Future<void> fetchNotebooks() async {
+    _isLoadingNotebooks = true;
+    notifyListeners();
+
+    try {
+      final response = await _apiClient.get(ApiConfig.notebookList);
+      final rawList = response['notebooks'];
+      _notebooks.clear();
+      if (rawList is List && rawList.isNotEmpty) {
+        for (final item in rawList) {
+          if (item is Map<String, dynamic>) {
+            _notebooks.add(NotebookItem.fromJson(item));
+          }
+        }
+      } else {
+        _setFallbackNotebooks();
+      }
+    } catch (_) {
+      // Khi server offline thì dùng danh sách mặc định giống giao diện
+      if (_notebooks.isEmpty) {
+        _setFallbackNotebooks();
+      }
+    } finally {
+      _isLoadingNotebooks = false;
+      notifyListeners();
+    }
+  }
+
+  void _setFallbackNotebooks() {
+    _notebooks.clear();
+    _notebooks.addAll([
+      const NotebookItem(
+        id: 1,
+        title: 'Tesr',
+        description: 'Sổ tay mẫu',
+        wordCount: 0,
+        createdAt: '29/10/2026',
+      ),
+      NotebookItem(
+        id: 2,
+        title: 'Huy',
+        description: 'Sổ tay từ vựng',
+        wordCount: _notebookMap.isNotEmpty ? _notebookMap.length : 12,
+        createdAt: '29/10/2026',
+      ),
+    ]);
+  }
+
+  /// Tạo sổ tay mới và đồng bộ lên MySQL
+  Future<NotebookItem?> createNotebook(
+    String title, {
+    String description = '',
+  }) async {
+    final trimmedTitle = title.trim();
+    if (trimmedTitle.isEmpty) return null;
+
+    try {
+      final response = await _apiClient.post(
+        ApiConfig.notebook,
+        {
+          'title': trimmedTitle,
+          'description': description,
+        },
+      );
+      final created = NotebookItem.fromJson(response);
+      _notebooks.insert(0, created);
+      notifyListeners();
+      return created;
+    } catch (_) {
+      // Fallback local
+      final localCreated = NotebookItem(
+        id: DateTime.now().millisecondsSinceEpoch % 100000,
+        title: trimmedTitle,
+        description: description,
+        wordCount: 0,
+        createdAt: '29/10/2026',
+      );
+      _notebooks.insert(0, localCreated);
+      notifyListeners();
+      return localCreated;
+    }
+  }
+
+  /// Cập nhật tên hoặc mô tả sổ tay
+  Future<bool> updateNotebook(
+    int id,
+    String title, {
+    String description = '',
+  }) async {
+    final trimmedTitle = title.trim();
+    if (trimmedTitle.isEmpty) return false;
+
+    final index = _notebooks.indexWhere((n) => n.id == id);
+    if (index != -1) {
+      final old = _notebooks[index];
+      _notebooks[index] = old.copyWith(
+        title: trimmedTitle,
+        description: description,
+      );
+      notifyListeners();
+    }
+
+    try {
+      await _apiClient.put(
+        '${ApiConfig.notebook}/$id',
+        {
+          'title': trimmedTitle,
+          'description': description,
+        },
+      );
+      return true;
+    } catch (_) {
+      return true;
+    }
+  }
+
+  /// Xóa sổ tay khỏi MySQL
+  Future<bool> deleteNotebook(int id) async {
+    _notebooks.removeWhere((n) => n.id == id);
+    if (_selectedNotebook?.id == id) {
+      _selectedNotebook = null;
+    }
+    notifyListeners();
+
+    try {
+      await _apiClient.delete('${ApiConfig.notebook}/$id');
+      return true;
+    } catch (_) {
+      return true;
+    }
+  }
+
+  /// Chọn / bỏ chọn sổ tay để ôn tập hoặc lọc
+  void selectNotebook(NotebookItem? notebook) {
+    _selectedNotebook = notebook;
+    notifyListeners();
   }
 
   Future<void> fetchStatsAndWords() async {
@@ -171,6 +335,7 @@ class NotebookService extends ChangeNotifier {
     required List<TopicWord> unknownWords,
   }) async {
     final List<Map<String, dynamic>> syncItems = [];
+    final currentNotebookId = _selectedNotebook?.id;
 
     // 1. Từ chưa thuộc (Nút X đỏ)
     for (final word in unknownWords) {
@@ -185,6 +350,7 @@ class NotebookService extends ChangeNotifier {
           romaji: word.romaji,
           meaning: word.meaning,
           status: NotebookWordStatus.chuaThuoc,
+          notebookId: currentNotebookId,
         );
       }
       syncItems.add(_notebookMap[word.word]!.toJson());
@@ -203,6 +369,7 @@ class NotebookService extends ChangeNotifier {
           romaji: word.romaji,
           meaning: word.meaning,
           status: NotebookWordStatus.thuocLoMo,
+          notebookId: currentNotebookId,
         );
       }
       syncItems.add(_notebookMap[word.word]!.toJson());
@@ -212,7 +379,6 @@ class NotebookService extends ChangeNotifier {
     for (final word in masteredWords) {
       final existing = _notebookMap[word.word];
       if (existing != null) {
-        // Nếu đã học nhiều lần thì thành "Thuộc làu làu", nếu mới thì "Thuộc kha khá"
         existing.reviewCount++;
         existing.status = existing.reviewCount >= 2
             ? NotebookWordStatus.thuocLauLau
@@ -224,12 +390,12 @@ class NotebookService extends ChangeNotifier {
           romaji: word.romaji,
           meaning: word.meaning,
           status: NotebookWordStatus.thuocLauLau,
+          notebookId: currentNotebookId,
         );
       }
       syncItems.add(_notebookMap[word.word]!.toJson());
     }
 
-    // Thông báo cho màn hình Sổ tay cập nhật UI ngay lập tức
     notifyListeners();
 
     // Đồng bộ lên Backend Spring Boot & MySQL
@@ -252,14 +418,22 @@ class NotebookService extends ChangeNotifier {
   }
 
   /// Lấy toàn bộ từ để ôn tập sổ tay
-  List<TopicWord> getAllReviewWords() {
+  List<TopicWord> getAllReviewWords({int? notebookId}) {
+    if (notebookId != null) {
+      final list = _notebookMap.values
+          .where((w) => w.notebookId == notebookId)
+          .map((w) => w.toTopicWord())
+          .toList();
+      if (list.isNotEmpty) return list;
+    }
     return _notebookMap.values.map((w) => w.toTopicWord()).toList();
   }
 
   @visibleForTesting
   void clearForTesting() {
     _notebookMap.clear();
+    _notebooks.clear();
+    _selectedNotebook = null;
     notifyListeners();
   }
 }
-

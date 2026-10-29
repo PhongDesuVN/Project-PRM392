@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.prm.backend.service.NotebookServiceTest
+-------------------------------------------------------------------------------
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.429 s -- in com.prm.backend.service.NotebookServiceTest

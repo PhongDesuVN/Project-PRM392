@@ -78,9 +78,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // Thuộc làu làu có 1 từ
-    expect(find.text('1 từ'), findsOneWidget);
-    // 3 mục còn lại có 0 từ
-    expect(find.text('0 từ'), findsNWidgets(3));
+    expect(find.text('Tổng quan'), findsOneWidget);
+    expect(find.text('Danh sách sổ tay'), findsOneWidget);
+    expect(find.text('--'), findsNWidgets(3));
+    expect(find.text('Ôn tập sổ tay (1 từ)'), findsOneWidget);
   });
 }

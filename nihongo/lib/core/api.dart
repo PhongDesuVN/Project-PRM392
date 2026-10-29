@@ -27,6 +27,8 @@ class ApiConfig {
   static const String notebookSync = '/notebook/sync';
   static const String notebookStats = '/notebook/stats';
   static const String notebookWords = '/notebook/words';
+  static const String notebookList = '/notebook/list';
+  static const String notebook = '/notebook';
   static const String searchHistory = '/search-history';
 }
 
@@ -119,6 +121,35 @@ class ApiClient {
       throw ApiException('Server phản hồi quá lâu. Vui lòng thử lại.');
     } on FormatException {
       throw ApiException('Dữ liệu trả về không hợp lệ.');
+    }
+  }
+
+  Future<Map<String, dynamic>> put(
+    String path,
+    Map<String, dynamic> body, {
+    String? bearerToken,
+  }) async {
+    try {
+      final response = await _client
+          .put(
+            Uri.parse('$_baseUrl$path'),
+            headers: {
+              'Content-Type': 'application/json; charset=utf-8',
+              if (bearerToken != null) 'Authorization': 'Bearer $bearerToken',
+            },
+            body: jsonEncode(body),
+          )
+          .timeout(ApiConfig.timeout);
+
+      return _handleResponse(response);
+    } on SocketException {
+      throw ApiException(_networkError);
+    } on http.ClientException {
+      throw ApiException(_networkError);
+    } on TimeoutException {
+      throw ApiException('Server ph?n h?i quá lâu. Vui lòng th? l?i.');
+    } on FormatException {
+      throw ApiException('D? li?u tr? v? không h?p l?.');
     }
   }
 

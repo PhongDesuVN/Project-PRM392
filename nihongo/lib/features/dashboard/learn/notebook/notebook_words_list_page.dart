@@ -3,19 +3,20 @@ import 'package:flutter/material.dart';
 import '../../../learn/topic_words/flashcard_page.dart';
 import 'services/notebook_service.dart';
 
-/// Màn hình danh sách từ vựng trong Sổ tay theo từng nhóm trạng thái
-/// (Chưa thuộc, Thuộc lơ mơ, Thuộc kha khá, Thuộc làu làu).
+/// Màn hình danh sách từ vựng trong Sổ tay theo từng nhóm trạng thái hoặc theo sổ tay
 class NotebookWordsListPage extends StatelessWidget {
   const NotebookWordsListPage({
     super.key,
-    required this.status,
+    this.status,
     required this.statusTitle,
     required this.themeColor,
+    this.notebookId,
   });
 
-  final NotebookWordStatus status;
+  final NotebookWordStatus? status;
   final String statusTitle;
   final Color themeColor;
+  final int? notebookId;
 
   void _playAudio(BuildContext context, String text) {
     ScaffoldMessenger.of(context)
@@ -37,7 +38,9 @@ class NotebookWordsListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final words = NotebookService.instance.getWordsByStatus(status);
+    final words = status != null
+        ? NotebookService.instance.getWordsByStatus(status!)
+        : NotebookService.instance.getAllReviewWords(notebookId: notebookId);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF1F3F6),
@@ -73,7 +76,7 @@ class NotebookWordsListPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Chưa có từ nào ở trạng thái "$statusTitle"',
+                    'Chưa có từ nào trong "$statusTitle"',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -119,7 +122,7 @@ class NotebookWordsListPage extends StatelessWidget {
                       // Vạch màu trạng thái
                       Container(
                         width: 4,
-                        height: 38,
+                        height: 44,
                         decoration: BoxDecoration(
                           color: themeColor,
                           borderRadius: BorderRadius.circular(2),
@@ -127,7 +130,7 @@ class NotebookWordsListPage extends StatelessWidget {
                       ),
                       const SizedBox(width: 14),
 
-                      // Thông tin từ vựng
+                      // Nội dung từ
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,39 +140,52 @@ class NotebookWordsListPage extends StatelessWidget {
                                 Text(
                                   word.word,
                                   style: const TextStyle(
-                                    fontSize: 19,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.w700,
-                                    color: Color(0xFF1565C0),
+                                    color: Color(0xFF1E242B),
                                   ),
                                 ),
-                                const SizedBox(width: 10),
+                                const SizedBox(width: 8),
                                 Text(
-                                  word.reading,
-                                  style: TextStyle(
+                                  '【${word.reading}】',
+                                  style: const TextStyle(
                                     fontSize: 14,
-                                    color: Colors.grey.shade600,
+                                    color: Color(0xFF6B7280),
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ],
                             ),
+                            if (word.romaji != null && word.romaji!.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2),
+                                child: Text(
+                                  word.romaji!,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFF9CA3AF),
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ),
                             const SizedBox(height: 4),
                             Text(
                               word.meaning,
                               style: const TextStyle(
                                 fontSize: 14,
+                                color: Color(0xFF374151),
                                 fontWeight: FontWeight.w500,
-                                color: Color(0xFF2C3E50),
                               ),
                             ),
                           ],
                         ),
                       ),
 
-                      // Nút loa phát âm
+                      // Nút nghe phát âm
                       IconButton(
                         icon: const Icon(
                           Icons.volume_up_outlined,
-                          color: Color(0xFF546E7A),
+                          color: Color(0xFF4B5563),
                           size: 22,
                         ),
                         onPressed: () => _playAudio(context, word.word),
@@ -182,36 +198,44 @@ class NotebookWordsListPage extends StatelessWidget {
       bottomNavigationBar: words.isEmpty
           ? null
           : Container(
-              padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
-              color: Colors.white,
-              child: SizedBox(
-                height: 48,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute<void>(
-                        builder: (_) => FlashcardPage(
-                          topicTitle: statusTitle,
-                          words: words,
-                        ),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.style_rounded, color: Colors.white),
-                  label: Text(
-                    'Luyện tập ${words.length} thẻ này',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, -3),
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1976D2),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                ],
+              ),
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (_) => FlashcardPage(
+                        topicTitle: 'Ôn tập: $statusTitle',
+                        words: words,
+                      ),
                     ),
+                  );
+                },
+                icon: const Icon(Icons.style_outlined, color: Colors.white),
+                label: Text(
+                  'Luyện tập Flashcard (${words.length} từ)',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: themeColor,
+                  elevation: 0,
+                  minimumSize: const Size.fromHeight(48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),

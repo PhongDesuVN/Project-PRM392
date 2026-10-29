@@ -70,17 +70,8 @@ class _LearnTabState extends State<LearnTab> {
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 200),
               child: _selectedTab == 0
-                  ? MyNotebookView(
-                      key: const ValueKey('my_notebook_view'),
-                      onReviewNotebook: () {
-                        ScaffoldMessenger.of(context)
-                          ..hideCurrentSnackBar()
-                          ..showSnackBar(
-                            const SnackBar(
-                              content: Text('Bắt đầu buổi ôn tập sổ tay!'),
-                            ),
-                          );
-                      },
+                  ? const MyNotebookView(
+                      key: ValueKey('my_notebook_view'),
                     )
                   : LibraryView(
                       key: const ValueKey('library_view'),

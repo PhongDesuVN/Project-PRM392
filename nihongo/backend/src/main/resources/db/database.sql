@@ -222,6 +222,8 @@ CREATE TABLE IF NOT EXISTS user_notebook_words (
     status ENUM('chua_thuoc', 'thuoc_lo_mo', 'thuoc_kha_kha', 'thuoc_lau_lau') NOT NULL,
     review_count INT DEFAULT 1,
     last_studied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    notebook_id INT NULL,
+    FOREIGN KEY (notebook_id) REFERENCES notebooks(id) ON DELETE SET NULL,
     UNIQUE KEY uq_user_word (user_id, word),
     INDEX idx_notebook_status (user_id, status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
