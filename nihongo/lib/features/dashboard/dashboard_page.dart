@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+
 import '../../shared/japanese_background.dart';
 import '../../shared/ui.dart';
 import '../auth/auth_service.dart';
@@ -13,6 +14,7 @@ import 'learn_tab.dart';
 import 'learning_topic.dart';
 import 'mock_exam/mock_exam_tab.dart';
 import 'profile_tab.dart';
+import 'search_history_service.dart';
 import 'topic_detail_page.dart';
 import 'translation/translation_tab.dart';
 
@@ -36,6 +38,7 @@ class _DashboardPageState extends State<DashboardPage> {
   final _authService = AuthService();
   int _currentIndex = 0;
   String _dictionaryQuery = '';
+  int _learnInitialTabIndex = 0;
 
   @override
   void dispose() {
@@ -45,6 +48,13 @@ class _DashboardPageState extends State<DashboardPage> {
 
   void _selectTab(int index) => setState(() => _currentIndex = index);
 
+  void _openAlphabetLibrary() {
+    setState(() {
+      _learnInitialTabIndex = 1;
+      _currentIndex = _learnTabIndex;
+    });
+  }
+
   void _openTopic(LearningTopic topic) {
     Navigator.push(
       context,
@@ -53,8 +63,12 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _openDictionary([String query = '']) {
+    final trimmed = query.trim();
+    if (trimmed.isNotEmpty) {
+      SearchHistoryService.instance.addKeyword(trimmed);
+    }
     setState(() {
-      _dictionaryQuery = query;
+      _dictionaryQuery = trimmed;
       _currentIndex = _dictionaryTabIndex;
     });
   }
@@ -64,8 +78,10 @@ class _DashboardPageState extends State<DashboardPage> {
       context,
       MaterialPageRoute<String>(builder: (_) => const KanjiHandwritingPage()),
     );
-    if (!mounted || kanji == null) return;
-    _openDictionary(kanji);
+    if (!mounted || kanji == null || kanji.trim().isEmpty) return;
+    final trimmed = kanji.trim();
+    SearchHistoryService.instance.addKeyword(trimmed);
+    _openDictionary(trimmed);
   }
 
   void _showFeatureNotice(String feature) {
@@ -138,7 +154,13 @@ class _DashboardPageState extends State<DashboardPage> {
           onSearch: _openDictionary,
           onOpenDictionary: () => _openDictionary(),
           onOpenTranslation: () => _selectTab(_translationTabIndex),
-          onOpenLearning: () => _selectTab(_learnTabIndex),
+          onOpenLearning: () {
+            setState(() {
+              _learnInitialTabIndex = 0;
+              _currentIndex = _learnTabIndex;
+            });
+          },
+          onOpenAlphabetLibrary: _openAlphabetLibrary,
           onOpenMockExam: () => _selectTab(_mockExamTabIndex),
           onOpenProfile: _openProfile,
           onCameraSearch: () => _showFeatureNotice('Tìm kiếm bằng ảnh'),
@@ -154,7 +176,11 @@ class _DashboardPageState extends State<DashboardPage> {
       case 2:
         return const TranslationTab();
       case 3:
-        return LearnTab(onTopicTap: _openTopic);
+        return LearnTab(
+          key: ValueKey('learn_tab_$_learnInitialTabIndex'),
+          initialTabIndex: _learnInitialTabIndex,
+          onTopicTap: _openTopic,
+        );
       default:
         return const MockExamTab();
     }
@@ -169,7 +195,12 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
-        onDestinationSelected: _selectTab,
+        onDestinationSelected: (index) {
+          if (index == _learnTabIndex && _currentIndex != _learnTabIndex) {
+            _learnInitialTabIndex = 0;
+          }
+          _selectTab(index);
+        },
         backgroundColor: Colors.white,
         indicatorColor: AppColors.blue.withValues(alpha: 0.15),
         destinations: const [

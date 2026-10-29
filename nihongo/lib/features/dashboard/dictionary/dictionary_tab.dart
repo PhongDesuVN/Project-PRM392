@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/api.dart';
 import '../../../shared/ui.dart';
+import '../search_history_service.dart';
 import '../shared/dashboard_tool_widgets.dart';
 import 'dictionary_service.dart';
 
@@ -80,6 +81,8 @@ class _DictionaryTabState extends State<DictionaryTab> {
       });
       return;
     }
+
+    SearchHistoryService.instance.addKeyword(query);
 
     setState(() {
       _isLoading = true;

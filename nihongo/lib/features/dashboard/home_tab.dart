@@ -2,49 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../shared/nihon_logo.dart';
 import '../../shared/ui.dart';
+import 'daily_challenge_service.dart';
 import 'learning_topic.dart';
-
-/// Dữ liệu câu hỏi cho phần Thử thách mỗi ngày
-class _DailyQuizItem {
-  const _DailyQuizItem({
-    required this.kanji,
-    required this.sino,
-    required this.options,
-    required this.correctIndex,
-  });
-
-  final String kanji;
-  final String sino;
-  final List<String> options;
-  final int correctIndex;
-}
-
-const _kDailyQuizzes = <_DailyQuizItem>[
-  _DailyQuizItem(
-    kanji: '写',
-    sino: 'TẢ',
-    options: ['việc đặt hàng', 'sự lái (xe)', 'à à...', '1. sao chép'],
-    correctIndex: 3,
-  ),
-  _DailyQuizItem(
-    kanji: '学',
-    sino: 'HỌC',
-    options: ['học tập', 'ngôi trường', 'bắt đầu', 'mùa hè'],
-    correctIndex: 0,
-  ),
-  _DailyQuizItem(
-    kanji: '生',
-    sino: 'SINH',
-    options: ['con đường', 'mặt trời', 'cuộc sống', 'ngôi sao'],
-    correctIndex: 2,
-  ),
-  _DailyQuizItem(
-    kanji: '行',
-    sino: 'HÀNH',
-    options: ['đi, tiến hành', 'dừng lại', 'nghỉ ngơi', 'nấu ăn'],
-    correctIndex: 0,
-  ),
-];
+import 'search_history_service.dart';
+import 'widgets/extensions_bottom_sheet.dart';
 
 /// Tab Khám phá: tìm kiếm nhanh phong cách Mazii, phím tắt bảng chữ cái,
 /// từ khóa gần đây, thử thách mỗi ngày và chủ đề học.
@@ -61,6 +22,7 @@ class HomeTab extends StatefulWidget {
     required this.onCameraSearch,
     required this.onHandwritingSearch,
     required this.onTopicTap,
+    this.onOpenAlphabetLibrary,
   });
 
   final String? fullName;
@@ -73,6 +35,7 @@ class HomeTab extends StatefulWidget {
   final VoidCallback onCameraSearch;
   final VoidCallback onHandwritingSearch;
   final ValueChanged<LearningTopic> onTopicTap;
+  final VoidCallback? onOpenAlphabetLibrary;
 
   @override
   State<HomeTab> createState() => _HomeTabState();
@@ -81,38 +44,32 @@ class HomeTab extends StatefulWidget {
 class _HomeTabState extends State<HomeTab> {
   final _searchController = TextEditingController();
 
-  // Danh sách từ khóa tìm kiếm gần đây giống giao diện mẫu
-  final List<String> _recentKeywords = [
-    'セ',
-    '出し',
-    '貸し',
-    '多く',
-    '生活',
-    '商協',
-    '協',
-    '小さい',
-    '火',
-  ];
-
   // Thử thách mỗi ngày
-  int _quizIndex = 0;
+  late DailyChallengeQuiz _currentQuiz;
   int? _selectedAnswerIndex;
 
   @override
+  void initState() {
+    super.initState();
+    _currentQuiz = DailyChallengeService.instance.generateRandomQuiz();
+    SearchHistoryService.instance.addListener(_onSearchHistoryChanged);
+  }
+
+  @override
   void dispose() {
+    SearchHistoryService.instance.removeListener(_onSearchHistoryChanged);
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _onSearchHistoryChanged() {
+    if (mounted) setState(() {});
   }
 
   void _submitSearch([String? text]) {
     final query = (text ?? _searchController.text).trim();
     if (query.isNotEmpty) {
-      if (!_recentKeywords.contains(query)) {
-        setState(() {
-          _recentKeywords.insert(0, query);
-          if (_recentKeywords.length > 12) _recentKeywords.removeLast();
-        });
-      }
+      SearchHistoryService.instance.addKeyword(query);
       widget.onSearch(query);
     } else {
       widget.onOpenDictionary();
@@ -120,12 +77,12 @@ class _HomeTabState extends State<HomeTab> {
   }
 
   void _removeKeyword(String word) {
-    setState(() => _recentKeywords.remove(word));
+    SearchHistoryService.instance.removeKeyword(word);
   }
 
   void _nextQuiz() {
     setState(() {
-      _quizIndex = (_quizIndex + 1) % _kDailyQuizzes.length;
+      _currentQuiz = DailyChallengeService.instance.generateRandomQuiz();
       _selectedAnswerIndex = null;
     });
   }
@@ -136,7 +93,7 @@ class _HomeTabState extends State<HomeTab> {
     final greeting =
         name != null && name.isNotEmpty ? 'Xin chào, $name' : 'Xin chào';
     final initial = name != null && name.isNotEmpty ? name[0].toUpperCase() : 'N';
-    final quiz = _kDailyQuizzes[_quizIndex];
+    final quiz = _currentQuiz;
 
     return ListView(
       physics: const BouncingScrollPhysics(),
@@ -376,7 +333,13 @@ class _HomeTabState extends State<HomeTab> {
                     ),
                   ),
                 ),
-                onTap: () => widget.onTopicTap(learningTopics[0]),
+                onTap: () {
+                  if (widget.onOpenAlphabetLibrary != null) {
+                    widget.onOpenAlphabetLibrary!();
+                  } else {
+                    widget.onTopicTap(learningTopics[0]);
+                  }
+                },
               ),
             ),
             const SizedBox(width: 10),
@@ -388,7 +351,15 @@ class _HomeTabState extends State<HomeTab> {
                   size: 19,
                   color: AppColors.darkText,
                 ),
-                onTap: widget.onOpenMockExam,
+                onTap: () {
+                  ExtensionsBottomSheet.show(
+                    context: context,
+                    onOpenDictionary: widget.onOpenDictionary,
+                    onOpenTranslation: widget.onOpenTranslation,
+                    onOpenLearning: widget.onOpenLearning,
+                    onOpenMockExam: widget.onOpenMockExam,
+                  );
+                },
               ),
             ),
           ],
@@ -411,7 +382,7 @@ class _HomeTabState extends State<HomeTab> {
             borderRadius: BorderRadius.circular(18),
             border: Border.all(color: AppColors.border),
           ),
-          child: _recentKeywords.isEmpty
+          child: SearchHistoryService.instance.recentKeywords.isEmpty
               ? const Padding(
                   padding: EdgeInsets.symmetric(vertical: 8),
                   child: Center(
@@ -424,7 +395,7 @@ class _HomeTabState extends State<HomeTab> {
               : Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: _recentKeywords.map((word) {
+                  children: SearchHistoryService.instance.recentKeywords.map((word) {
                     return InkWell(
                       onTap: () => _submitSearch(word),
                       borderRadius: BorderRadius.circular(10),
@@ -494,36 +465,74 @@ class _HomeTabState extends State<HomeTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Dòng Kanji câu hỏi & nút đổi từ khác
+              // Dòng câu hỏi Từ vựng / Ngữ pháp & nút đổi câu hỏi khác
               Row(
                 children: [
                   Container(
-                    width: 44,
-                    height: 44,
+                    constraints: const BoxConstraints(minWidth: 46, minHeight: 46),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: AppColors.blue.withValues(alpha: 0.12),
+                      color: (quiz.type == DailyQuizType.grammar
+                              ? const Color(0xFF7E57C2)
+                              : AppColors.blue)
+                          .withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      quiz.kanji,
-                      style: const TextStyle(
-                        fontSize: 24,
+                      quiz.prompt,
+                      style: TextStyle(
+                        fontSize: quiz.prompt.length > 5
+                            ? 15
+                            : (quiz.prompt.length > 2 ? 18 : 22),
                         fontWeight: FontWeight.w900,
-                        color: AppColors.blue,
+                        color: quiz.type == DailyQuizType.grammar
+                            ? const Color(0xFF7E57C2)
+                            : AppColors.blue,
                       ),
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Text(
-                    '「${quiz.sino}」',
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.darkText,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: quiz.type == DailyQuizType.grammar
+                                ? const Color(0xFFEDE7F6)
+                                : const Color(0xFFE3F2FD),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            quiz.categoryLabel,
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w700,
+                              color: quiz.type == DailyQuizType.grammar
+                                  ? const Color(0xFF5E35B1)
+                                  : const Color(0xFF1565C0),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          quiz.subtitle,
+                          style: const TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.darkText,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
                   ),
-                  const Spacer(),
                   IconButton(
                     tooltip: 'Đổi câu hỏi',
                     onPressed: _nextQuiz,
@@ -596,6 +605,37 @@ class _HomeTabState extends State<HomeTab> {
                   );
                 },
               ),
+              if (_selectedAnswerIndex != null) ...[
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Icon(
+                      _selectedAnswerIndex == quiz.correctIndex
+                          ? Icons.check_circle_rounded
+                          : Icons.cancel_rounded,
+                      size: 16,
+                      color: _selectedAnswerIndex == quiz.correctIndex
+                          ? const Color(0xFF00B894)
+                          : const Color(0xFFE74C3C),
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        _selectedAnswerIndex == quiz.correctIndex
+                            ? 'Chính xác! Bạn làm rất tốt.'
+                            : 'Chưa đúng. Đáp án: ${quiz.options[quiz.correctIndex]}',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          color: _selectedAnswerIndex == quiz.correctIndex
+                              ? const Color(0xFF00B894)
+                              : const Color(0xFFE74C3C),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ],
           ),
         ),

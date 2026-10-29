@@ -33,6 +33,14 @@ class _LearnTabState extends State<LearnTab> {
     _selectedTab = widget.initialTabIndex;
   }
 
+  @override
+  void didUpdateWidget(covariant LearnTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialTabIndex != oldWidget.initialTabIndex) {
+      _selectedTab = widget.initialTabIndex;
+    }
+  }
+
   void _onTabChanged(int index) {
     if (_selectedTab != index) {
       setState(() => _selectedTab = index);
