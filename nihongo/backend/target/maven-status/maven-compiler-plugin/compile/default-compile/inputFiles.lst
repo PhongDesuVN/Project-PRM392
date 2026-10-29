@@ -3,13 +3,17 @@ C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\dto\auth\AuthDtos.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\dto\dictionary\DictionaryDtos.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\controller\AlphabetController.java
+C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\controller\SearchHistoryController.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\controller\TopicController.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\dto\topic\TopicDtos.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\config\FirebaseConfig.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\controller\AuthController.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\service\DictionaryService.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\repository\UserRepository.java
+C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\dto\search\SearchHistoryDtos.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\service\TopicService.java
+C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\service\SearchHistoryService.java
+C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\repository\SearchHistoryRepository.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\repository\TopicRepository.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\dto\notebook\NotebookDtos.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\service\AlphabetService.java

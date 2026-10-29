@@ -52,7 +52,7 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**", "/api/auth/**", "/alphabet/**", "/dictionary/**", "/topics/**",
-                                "/notebook/**")
+                                "/notebook/**", "/search-history/**")
                         .permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(e -> e

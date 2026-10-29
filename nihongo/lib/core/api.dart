@@ -27,6 +27,7 @@ class ApiConfig {
   static const String notebookSync = '/notebook/sync';
   static const String notebookStats = '/notebook/stats';
   static const String notebookWords = '/notebook/words';
+  static const String searchHistory = '/search-history';
 }
 
 /// Loi phat sinh khi goi API, kem message da san sang hien thi cho nguoi dung.
@@ -113,6 +114,33 @@ class ApiClient {
       throw ApiException(_networkError);
     } on http.ClientException {
       // Tren Android, loi mang thuong duoc goi lai thanh ClientException.
+      throw ApiException(_networkError);
+    } on TimeoutException {
+      throw ApiException('Server phản hồi quá lâu. Vui lòng thử lại.');
+    } on FormatException {
+      throw ApiException('Dữ liệu trả về không hợp lệ.');
+    }
+  }
+
+  Future<Map<String, dynamic>> delete(
+    String path, {
+    String? bearerToken,
+  }) async {
+    try {
+      final response = await _client
+          .delete(
+            Uri.parse('$_baseUrl$path'),
+            headers: {
+              'Content-Type': 'application/json; charset=utf-8',
+              if (bearerToken != null) 'Authorization': 'Bearer $bearerToken',
+            },
+          )
+          .timeout(ApiConfig.timeout);
+
+      return _handleResponse(response);
+    } on SocketException {
+      throw ApiException(_networkError);
+    } on http.ClientException {
       throw ApiException(_networkError);
     } on TimeoutException {
       throw ApiException('Server phản hồi quá lâu. Vui lòng thử lại.');
