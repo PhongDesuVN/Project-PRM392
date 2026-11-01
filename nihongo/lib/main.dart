@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
+import 'core/api.dart';
 import 'features/dashboard/dashboard_page.dart';
 import 'firebase_options.dart';
 import 'shared/ui.dart';
@@ -12,7 +15,10 @@ void main() async {
   // 2. Khởi tạo Firebase Authentication và Services
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // 3. Khởi chạy ứng dụng
+  // 3. Tự động kiểm tra và chuyển Backend URL phù hợp với máy thật (USB/WiFi) hoặc máy ảo
+  unawaited(ApiConfig.detectWorkingBaseUrl());
+
+  // 4. Khởi chạy ứng dụng
   runApp(const MyApp());
 }
 
