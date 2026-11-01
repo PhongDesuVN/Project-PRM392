@@ -12,7 +12,7 @@ import 'package:http/http.dart' as http;
 class ApiConfig {
   const ApiConfig._();
 
-  static const String baseUrl = 'http://localhost:8080';
+  static const String baseUrl = 'http://10.0.2.2:8080';
   static const Duration timeout = Duration(seconds: 15);
 
   // Auth endpoints
@@ -30,7 +30,6 @@ class ApiConfig {
   static const String notebookList = '/notebook/list';
   static const String notebook = '/notebook';
   static const String searchHistory = '/search-history';
-  static const String mockExam = '/mock-exam';
 }
 
 /// Loi phat sinh khi goi API, kem message da san sang hien thi cho nguoi dung.

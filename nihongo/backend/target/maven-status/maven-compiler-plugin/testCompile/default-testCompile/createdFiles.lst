@@ -1,0 +1,5 @@
+com\prm\backend\service\NotebookServiceTest.class
+com\prm\backend\repository\NotebookRepositoryIntegrationTest.class
+com\prm\backend\repository\SearchHistoryRepositoryIntegrationTest.class
+com\prm\backend\service\SearchHistoryServiceTest.class
+com\prm\backend\service\AlphabetServiceTest.class
