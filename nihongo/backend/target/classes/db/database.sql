@@ -252,8 +252,6 @@ CREATE TABLE IF NOT EXISTS jlpt_tests (
     id INT PRIMARY KEY AUTO_INCREMENT,
     title VARCHAR(255) NOT NULL,
     level VARCHAR(5) NOT NULL,
-    -- vocabulary / grammar: test luyen tap nhanh; jlpt: de thi thu theo cau truc JLPT
-    test_type ENUM('vocabulary', 'grammar', 'jlpt') NOT NULL DEFAULT 'jlpt',
     duration_minutes INT DEFAULT 60,
     total_questions INT DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -266,8 +264,6 @@ CREATE TABLE IF NOT EXISTS jlpt_questions (
     question_text TEXT NOT NULL,
     audio_url VARCHAR(500),
     passage_text TEXT,
-    explanation TEXT,
-    question_order INT NOT NULL DEFAULT 0,
     FOREIGN KEY (test_id) REFERENCES jlpt_tests(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
