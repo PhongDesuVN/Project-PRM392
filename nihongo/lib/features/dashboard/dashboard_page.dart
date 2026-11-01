@@ -7,6 +7,7 @@ import '../../shared/japanese_background.dart';
 import '../../shared/ui.dart';
 import '../auth/auth_service.dart';
 import '../auth/login/login_page.dart';
+import '../camera_ocr/camera_ocr_page.dart';
 import 'dictionary/kanji_handwriting_page.dart';
 import 'dictionary/dictionary_tab.dart';
 import 'home_tab.dart';
@@ -147,15 +148,24 @@ class _DashboardPageState extends State<DashboardPage> {
     _openDictionary(trimmed);
   }
 
-  void _showFeatureNotice(String feature) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text('$feature sẽ được kết nối trong bước tiếp theo.'),
-        ),
-      );
+  Future<void> _openCameraSearch() async {
+    final result = await Navigator.push<CameraOcrResultData>(
+      context,
+      MaterialPageRoute<CameraOcrResultData>(
+        builder: (_) => const CameraOcrPage(),
+      ),
+    );
+    if (!mounted || result == null || result.query.trim().isEmpty) return;
+    final trimmed = result.query.trim();
+
+    if (result.targetAction == 'translate') {
+      _selectTab(_translationTabIndex);
+    } else {
+      SearchHistoryService.instance.addKeyword(trimmed);
+      _openDictionary(trimmed);
+    }
   }
+
 
   void _openProfile() {
     if (_isGuest) {
@@ -236,14 +246,14 @@ class _DashboardPageState extends State<DashboardPage> {
           onOpenAlphabetLibrary: _openAlphabetLibrary,
           onOpenMockExam: () => _selectTab(_mockExamTabIndex),
           onOpenProfile: _openProfile,
-          onCameraSearch: () => _showFeatureNotice('Tìm kiếm bằng ảnh'),
+          onCameraSearch: _openCameraSearch,
           onHandwritingSearch: _openHandwritingSearch,
           onTopicTap: _openTopic,
         );
       case 1:
         return DictionaryTab(
           initialQuery: _dictionaryQuery,
-          onCameraSearch: () => _showFeatureNotice('Tìm kiếm bằng ảnh'),
+          onCameraSearch: _openCameraSearch,
           onHandwritingSearch: _openHandwritingSearch,
         );
       case 2:

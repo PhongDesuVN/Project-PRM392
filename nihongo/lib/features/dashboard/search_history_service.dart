@@ -1,6 +1,7 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../core/api.dart';
@@ -25,6 +26,19 @@ class SearchHistoryService extends ChangeNotifier {
   final _storage = const FlutterSecureStorage();
   String? _currentEmail;
   bool _isGuest = false;
+
+  /// Đảm bảo không gọi thông báo thay đổi trạng thái trong chu kỳ build của Flutter
+  @override
+  void notifyListeners() {
+    final binding = WidgetsBinding.instance;
+    if (binding.schedulerPhase == SchedulerPhase.persistentCallbacks) {
+      binding.addPostFrameCallback((_) {
+        super.notifyListeners();
+      });
+    } else {
+      super.notifyListeners();
+    }
+  }
 
   String get _storageKey => _currentEmail != null && _currentEmail!.isNotEmpty
       ? 'nihongo_recent_search_keywords_${_currentEmail!}'
