@@ -55,6 +55,10 @@ class ApiClient {
     : _client = client ?? http.Client(),
       _baseUrl = baseUrl ?? ApiConfig.baseUrl;
 
+  static String? defaultUserEmail;
+  static int? defaultUserId;
+  static String? defaultAuthToken;
+
   final http.Client _client;
 
   /// Mac dinh la [ApiConfig.baseUrl]. Cho phep override de goi tu may host
@@ -63,6 +67,29 @@ class ApiClient {
 
   static const _networkError =
       'Không kết nối được tới server. Kiểm tra backend đã chạy chưa.';
+
+  Map<String, String> _buildHeaders({
+    String? contentType,
+    String? bearerToken,
+  }) {
+    final headers = <String, String>{
+      'Accept': 'application/json',
+    };
+    if (contentType != null) {
+      headers['Content-Type'] = contentType;
+    }
+    if (defaultUserEmail != null) {
+      headers['X-User-Email'] = defaultUserEmail!;
+    }
+    if (defaultUserId != null) {
+      headers['X-User-Id'] = defaultUserId!.toString();
+    }
+    final effectiveToken = bearerToken ?? defaultAuthToken;
+    if (effectiveToken != null) {
+      headers['Authorization'] = 'Bearer $effectiveToken';
+    }
+    return headers;
+  }
 
   Future<Map<String, dynamic>> get(
     String path, {
@@ -76,14 +103,48 @@ class ApiClient {
       final response = await _client
           .get(
             uri,
-            headers: {
-              'Accept': 'application/json',
-              if (bearerToken != null) 'Authorization': 'Bearer $bearerToken',
-            },
+            headers: _buildHeaders(bearerToken: bearerToken),
           )
           .timeout(ApiConfig.timeout);
 
       return _handleResponse(response);
+    } on SocketException {
+      throw ApiException(_networkError);
+    } on http.ClientException {
+      throw ApiException(_networkError);
+    } on TimeoutException {
+      throw ApiException('Server phản hồi quá lâu. Vui lòng thử lại.');
+    } on FormatException {
+      throw ApiException('Dữ liệu trả về không hợp lệ.');
+    }
+  }
+
+  Future<List<dynamic>> getList(
+    String path, {
+    Map<String, String> queryParameters = const {},
+    String? bearerToken,
+  }) async {
+    try {
+      final uri = Uri.parse('$_baseUrl$path').replace(
+        queryParameters: queryParameters.isEmpty ? null : queryParameters,
+      );
+      final response = await _client
+          .get(
+            uri,
+            headers: _buildHeaders(bearerToken: bearerToken),
+          )
+          .timeout(ApiConfig.timeout);
+
+      final rawBody = utf8.decode(response.bodyBytes);
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        if (rawBody.isEmpty) return [];
+        final decoded = jsonDecode(rawBody);
+        if (decoded is List) {
+          return decoded;
+        }
+        return [];
+      }
+      throw ApiException('Lỗi tải dữ liệu.');
     } on SocketException {
       throw ApiException(_networkError);
     } on http.ClientException {
@@ -104,10 +165,10 @@ class ApiClient {
       final response = await _client
           .post(
             Uri.parse('$_baseUrl$path'),
-            headers: {
-              'Content-Type': 'application/json; charset=utf-8',
-              if (bearerToken != null) 'Authorization': 'Bearer $bearerToken',
-            },
+            headers: _buildHeaders(
+              contentType: 'application/json; charset=utf-8',
+              bearerToken: bearerToken,
+            ),
             body: jsonEncode(body),
           )
           .timeout(ApiConfig.timeout);
@@ -134,10 +195,10 @@ class ApiClient {
       final response = await _client
           .put(
             Uri.parse('$_baseUrl$path'),
-            headers: {
-              'Content-Type': 'application/json; charset=utf-8',
-              if (bearerToken != null) 'Authorization': 'Bearer $bearerToken',
-            },
+            headers: _buildHeaders(
+              contentType: 'application/json; charset=utf-8',
+              bearerToken: bearerToken,
+            ),
             body: jsonEncode(body),
           )
           .timeout(ApiConfig.timeout);
@@ -148,9 +209,9 @@ class ApiClient {
     } on http.ClientException {
       throw ApiException(_networkError);
     } on TimeoutException {
-      throw ApiException('Server ph?n h?i quá lâu. Vui lòng th? l?i.');
+      throw ApiException('Server phản hồi quá lâu. Vui lòng thử lại.');
     } on FormatException {
-      throw ApiException('D? li?u tr? v? không h?p l?.');
+      throw ApiException('Dữ liệu trả về không hợp lệ.');
     }
   }
 
@@ -162,10 +223,10 @@ class ApiClient {
       final response = await _client
           .delete(
             Uri.parse('$_baseUrl$path'),
-            headers: {
-              'Content-Type': 'application/json; charset=utf-8',
-              if (bearerToken != null) 'Authorization': 'Bearer $bearerToken',
-            },
+            headers: _buildHeaders(
+              contentType: 'application/json; charset=utf-8',
+              bearerToken: bearerToken,
+            ),
           )
           .timeout(ApiConfig.timeout);
 

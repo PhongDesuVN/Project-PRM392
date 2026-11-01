@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../shared/nihon_logo.dart';
 import '../../shared/ui.dart';
+import 'daily_challenge_detail_page.dart';
 import 'daily_challenge_service.dart';
 import 'learning_topic.dart';
 import 'search_history_service.dart';
@@ -44,26 +45,27 @@ class HomeTab extends StatefulWidget {
 class _HomeTabState extends State<HomeTab> {
   final _searchController = TextEditingController();
 
-  // Thử thách mỗi ngày
-  late DailyChallengeQuiz _currentQuiz;
-  int? _selectedAnswerIndex;
+  // Thử thách mỗi ngày (Bộ 5 câu hỏi)
+  List<DailyChallengeQuiz> _dailyQuizzes = [];
+  int _currentQuizIndex = 0;
+  final Map<int, int> _userAnswers = {};
+
+  DailyChallengeQuiz get _currentQuiz => _dailyQuizzes.isNotEmpty
+      ? _dailyQuizzes[_currentQuizIndex]
+      : DailyChallengeService.instance.generateRandomQuiz();
+
+  int? get _selectedAnswerIndex => _userAnswers[_currentQuizIndex];
 
   @override
   void initState() {
     super.initState();
-    _currentQuiz = DailyChallengeService.instance.generateRandomQuiz();
-    SearchHistoryService.instance.addListener(_onSearchHistoryChanged);
+    _dailyQuizzes = DailyChallengeService.instance.generateDailySet(count: 5);
   }
 
   @override
   void dispose() {
-    SearchHistoryService.instance.removeListener(_onSearchHistoryChanged);
     _searchController.dispose();
     super.dispose();
-  }
-
-  void _onSearchHistoryChanged() {
-    if (mounted) setState(() {});
   }
 
   void _submitSearch([String? text]) {
@@ -82,17 +84,66 @@ class _HomeTabState extends State<HomeTab> {
 
   void _nextQuiz() {
     setState(() {
-      _currentQuiz = DailyChallengeService.instance.generateRandomQuiz();
-      _selectedAnswerIndex = null;
+      if (_dailyQuizzes.isEmpty) {
+        _dailyQuizzes = DailyChallengeService.instance.generateDailySet(
+          count: 5,
+        );
+        _currentQuizIndex = 0;
+      } else {
+        _currentQuizIndex = (_currentQuizIndex + 1) % _dailyQuizzes.length;
+      }
     });
+  }
+
+  void _openDailyChallengeDetail() {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => DailyChallengeDetailPage(
+          quizzes: _dailyQuizzes,
+          userAnswers: _userAnswers,
+          onSelectAnswer: (quizIdx, optIdx) {
+            setState(() {
+              _userAnswers[quizIdx] = optIdx;
+            });
+          },
+        ),
+      ),
+    );
+  }
+
+  void _onAnswerSelected(int index) {
+    if (_userAnswers.containsKey(_currentQuizIndex)) return;
+
+    final quiz = _currentQuiz;
+    final isCorrect = index == quiz.correctIndex;
+
+    setState(() {
+      _userAnswers[_currentQuizIndex] = index;
+    });
+
+    if (isCorrect) {
+      // Khi chọn đáp án đúng thì tự động next câu khác sau 600ms
+      Future.delayed(const Duration(milliseconds: 600), () {
+        if (!mounted) return;
+        if (_currentQuizIndex < _dailyQuizzes.length - 1) {
+          setState(() {
+            _currentQuizIndex++;
+          });
+        }
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final name = widget.fullName?.trim();
-    final greeting =
-        name != null && name.isNotEmpty ? 'Xin chào, $name' : 'Xin chào';
-    final initial = name != null && name.isNotEmpty ? name[0].toUpperCase() : 'N';
+    final greeting = name != null && name.isNotEmpty
+        ? 'Xin chào, $name'
+        : 'Xin chào';
+    final initial = name != null && name.isNotEmpty
+        ? name[0].toUpperCase()
+        : 'N';
     final quiz = _currentQuiz;
 
     return ListView(
@@ -135,11 +186,7 @@ class _HomeTabState extends State<HomeTab> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: const [
-                  Icon(
-                    Icons.auto_awesome,
-                    size: 16,
-                    color: Color(0xFF8E44AD),
-                  ),
+                  Icon(Icons.auto_awesome, size: 16, color: Color(0xFF8E44AD)),
                   SizedBox(width: 5),
                   Text(
                     '100%',
@@ -265,7 +312,10 @@ class _HomeTabState extends State<HomeTab> {
               const Divider(height: 1, thickness: 0.8),
               // Hàng công cụ tìm kiếm: Chụp ảnh | Tra bộ thủ | Viết Kanji
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     Expanded(
@@ -368,84 +418,89 @@ class _HomeTabState extends State<HomeTab> {
 
         // ===================================================================
         // 4. PHẦN: TÌM KIẾM GẦN ĐÂY (Với các tag có nút xoá '✕')
+        // Chỉ hiển thị khi người dùng hoặc khách đã thực hiện tìm kiếm
+        // Sử dụng ListenableBuilder để tự động render an toàn, không gọi setState during build
         // ===================================================================
-        _buildSectionHeader(
-          title: 'Tìm kiếm gần đây',
-          onTap: widget.onOpenDictionary,
-        ),
-        const SizedBox(height: 10),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.96),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: AppColors.border),
-          ),
-          child: SearchHistoryService.instance.recentKeywords.isEmpty
-              ? const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8),
-                  child: Center(
-                    child: Text(
-                      'Chưa có từ khoá tìm kiếm nào',
-                      style: TextStyle(color: AppColors.placeholder, fontSize: 13),
-                    ),
+        ListenableBuilder(
+          listenable: SearchHistoryService.instance,
+          builder: (context, _) {
+            final keywords = SearchHistoryService.instance.recentKeywords;
+            if (keywords.isEmpty) return const SizedBox.shrink();
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSectionHeader(
+                  title: 'Tìm kiếm gần đây',
+                  onTap: widget.onOpenDictionary,
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.96),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: AppColors.border),
                   ),
-                )
-              : Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: SearchHistoryService.instance.recentKeywords.map((word) {
-                    return InkWell(
-                      onTap: () => _submitSearch(word),
-                      borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: AppColors.border.withValues(alpha: 0.8),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: keywords.map((word) {
+                      return InkWell(
+                        onTap: () => _submitSearch(word),
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: AppColors.border.withValues(alpha: 0.8),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                word,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.darkText,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              GestureDetector(
+                                onTap: () => _removeKeyword(word),
+                                child: const Icon(
+                                  Icons.close_rounded,
+                                  size: 14,
+                                  color: AppColors.placeholder,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              word,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.darkText,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            GestureDetector(
-                              onTap: () => _removeKeyword(word),
-                              child: const Icon(
-                                Icons.close_rounded,
-                                size: 14,
-                                color: AppColors.placeholder,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList(),
+                      );
+                    }).toList(),
+                  ),
                 ),
+                const SizedBox(height: 20),
+              ],
+            );
+          },
         ),
-        const SizedBox(height: 20),
 
         // ===================================================================
         // 5. PHẦN: THỬ THÁCH MỖI NGÀY (Quiz Kanji tương tác với 4 đáp án)
         // ===================================================================
         _buildSectionHeader(
           title: 'Thử thách mỗi ngày',
-          onTap: _nextQuiz,
+          onTap: _openDailyChallengeDetail,
         ),
         const SizedBox(height: 10),
         Container(
@@ -469,14 +524,21 @@ class _HomeTabState extends State<HomeTab> {
               Row(
                 children: [
                   Container(
-                    constraints: const BoxConstraints(minWidth: 46, minHeight: 46),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    constraints: const BoxConstraints(
+                      minWidth: 46,
+                      minHeight: 46,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: (quiz.type == DailyQuizType.grammar
-                              ? const Color(0xFF7E57C2)
-                              : AppColors.blue)
-                          .withValues(alpha: 0.12),
+                      color:
+                          (quiz.type == DailyQuizType.grammar
+                                  ? const Color(0xFF7E57C2)
+                                  : AppColors.blue)
+                              .withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -497,27 +559,40 @@ class _HomeTabState extends State<HomeTab> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: quiz.type == DailyQuizType.grammar
-                                ? const Color(0xFFEDE7F6)
-                                : const Color(0xFFE3F2FD),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            quiz.categoryLabel,
-                            style: TextStyle(
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w700,
-                              color: quiz.type == DailyQuizType.grammar
-                                  ? const Color(0xFF5E35B1)
-                                  : const Color(0xFF1565C0),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: quiz.type == DailyQuizType.grammar
+                                    ? const Color(0xFFEDE7F6)
+                                    : const Color(0xFFE3F2FD),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                quiz.categoryLabel,
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: quiz.type == DailyQuizType.grammar
+                                      ? const Color(0xFF5E35B1)
+                                      : const Color(0xFF1565C0),
+                                ),
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 6),
+                            Text(
+                              '(${_currentQuizIndex + 1}/5)',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF94A3B8),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 3),
                         Text(
@@ -578,9 +653,7 @@ class _HomeTabState extends State<HomeTab> {
                   }
 
                   return InkWell(
-                    onTap: () {
-                      setState(() => _selectedAnswerIndex = index);
-                    },
+                    onTap: () => _onAnswerSelected(index),
                     borderRadius: BorderRadius.circular(10),
                     child: Container(
                       alignment: Alignment.center,
@@ -694,7 +767,10 @@ class _HomeTabState extends State<HomeTab> {
                       ),
                       child: const Text(
                         'Bắt đầu học',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ],

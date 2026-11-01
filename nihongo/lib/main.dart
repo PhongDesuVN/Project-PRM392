@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
-import 'features/auth/login/login_page.dart';
+import 'features/dashboard/dashboard_page.dart';
 import 'firebase_options.dart';
 import 'shared/ui.dart';
 
@@ -10,9 +10,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // 2. Khởi tạo Firebase Authentication và Services
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // 3. Khởi chạy ứng dụng
   runApp(const MyApp());
@@ -27,7 +25,7 @@ class MyApp extends StatelessWidget {
       title: 'Nihon',
       theme: AppTheme.light,
       debugShowCheckedModeBanner: false,
-      home: const LoginPage(),
+      home: const DashboardPage(email: '', fullName: 'Khách'),
     );
   }
 }

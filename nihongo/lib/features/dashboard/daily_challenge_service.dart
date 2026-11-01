@@ -21,6 +21,7 @@ class DailyChallengeQuiz {
     required this.type,
     required this.options,
     required this.correctIndex,
+    this.explanation = '',
   });
 
   /// Chữ Hán, từ vựng hoặc cấu trúc ngữ pháp cần hỏi
@@ -39,6 +40,9 @@ class DailyChallengeQuiz {
 
   /// Vị trí đáp án đúng trong [options] (0..3)
   final int correctIndex;
+
+  /// Giải thích nghĩa và ví dụ khi xem lại
+  final String explanation;
 }
 
 /// Service tạo câu hỏi và câu trả lời ngẫu nhiên từ kho dữ liệu Từ vựng và Ngữ pháp
@@ -107,6 +111,10 @@ class DailyChallengeService {
       subtitle = '「 $subtitle 」';
     }
 
+    final explanation = target.exampleJp != null && target.exampleJp!.isNotEmpty
+        ? '${target.meaning}\nVí dụ: ${target.exampleJp!} (${target.exampleVi ?? ""})'
+        : target.meaning;
+
     return DailyChallengeQuiz(
       prompt: target.word,
       subtitle: subtitle,
@@ -114,7 +122,25 @@ class DailyChallengeService {
       type: type,
       options: options,
       correctIndex: correctIndex,
+      explanation: explanation,
     );
+  }
+
+  /// Sinh danh sách 5 câu hỏi thử thách ngẫu nhiên cho buổi học
+  List<DailyChallengeQuiz> generateDailySet({int count = 5}) {
+    final List<DailyChallengeQuiz> list = [];
+    final Set<String> used = {};
+    for (int i = 0; i < count; i++) {
+      DailyChallengeQuiz quiz;
+      int tries = 0;
+      do {
+        quiz = generateRandomQuiz();
+        tries++;
+      } while (used.contains(quiz.prompt) && tries < 15);
+      used.add(quiz.prompt);
+      list.add(quiz);
+    }
+    return list;
   }
 
   List<TopicWord> _getVocabularyPool() {

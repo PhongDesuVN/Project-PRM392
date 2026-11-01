@@ -1,5 +1,6 @@
 package com.prm.backend.service;
 
+import com.prm.backend.dto.notebook.NotebookDtos.AddWordRequest;
 import com.prm.backend.dto.notebook.NotebookDtos.CreateNotebookRequest;
 import com.prm.backend.dto.notebook.NotebookDtos.NotebookItemDto;
 import com.prm.backend.dto.notebook.NotebookDtos.NotebookListResponse;
@@ -47,23 +48,35 @@ public class NotebookService {
         return notebookRepository.findWordsByNotebookId(notebookId);
     }
 
-    public void syncProgress(List<NotebookProgressItem> items) {
+    public NotebookWordItem addWordToNotebook(int userId, int notebookId, AddWordRequest request) {
+        return notebookRepository.addWordToNotebook(userId, notebookId, request);
+    }
+
+    public void syncProgress(int userId, List<NotebookProgressItem> items) {
         if (items == null || items.isEmpty())
             return;
         for (NotebookProgressItem item : items) {
-            notebookRepository.upsertWordProgress(item);
+            notebookRepository.upsertWordProgress(userId, item);
         }
     }
 
-    public NotebookStatsResponse getStats() {
-        return notebookRepository.getStats();
+    public NotebookStatsResponse getStats(int userId) {
+        return notebookRepository.getStats(userId);
     }
 
-    public List<NotebookWordItem> getWordsByStatus(String status) {
-        return notebookRepository.findWordsByStatus(status);
+    public List<NotebookWordItem> getWordsByStatus(int userId, String status) {
+        return notebookRepository.findWordsByStatus(userId, status);
     }
 
-    public List<NotebookWordItem> getAllReviewWords() {
-        return notebookRepository.findAllReviewWords();
+    public List<NotebookWordItem> getAllReviewWords(int userId) {
+        return notebookRepository.findAllReviewWords(userId);
+    }
+
+    public List<NotebookWordItem> getAllWords(int userId) {
+        return notebookRepository.findAllWords(userId);
+    }
+
+    public int getOrCreateUserId(String email, String fullName) {
+        return notebookRepository.getOrCreateUserId(email, fullName);
     }
 }

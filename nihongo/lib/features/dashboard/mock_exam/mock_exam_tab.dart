@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/api.dart';
 import '../../../shared/ui.dart';
+import '../../auth/login/login_page.dart';
 import '../shared/dashboard_tool_widgets.dart';
 import 'exam_page.dart';
 import 'models/exam_models.dart';
@@ -13,9 +14,10 @@ import 'services/mock_exam_service.dart';
 /// - Cấp độ: N5, N4, N3, N2, N1
 /// - Danh sách đề thi & Bộ lọc trạng thái (Tất cả, Chưa làm, Đang làm, Đã làm)
 class MockExamTab extends StatefulWidget {
-  const MockExamTab({super.key, this.service});
+  const MockExamTab({super.key, this.service, this.isGuest = false});
 
   final MockExamService? service;
+  final bool isGuest;
 
   @override
   State<MockExamTab> createState() => _MockExamTabState();
@@ -49,7 +51,21 @@ class _MockExamTabState extends State<MockExamTab> {
     });
     final level = _level;
     try {
-      final tests = await _service.fetchTests(level: level);
+      var tests = await _service.fetchTests(level: level);
+      if (widget.isGuest) {
+        tests = tests
+            .map((t) => ExamSummary(
+                  id: t.id,
+                  title: t.title,
+                  level: t.level,
+                  type: t.type,
+                  durationMinutes: t.durationMinutes,
+                  totalQuestions: t.totalQuestions,
+                  attempts: 0,
+                  bestPercent: 0,
+                ))
+            .toList();
+      }
       if (!mounted || level != _level) return;
       setState(() {
         _tests = tests;
@@ -80,7 +96,56 @@ class _MockExamTabState extends State<MockExamTab> {
     setState(() => _selectedStatusIndex = index);
   }
 
+  void _showGuestLoginDialog(String action) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: const [
+            Icon(Icons.lock_outline_rounded, color: AppColors.blue),
+            SizedBox(width: 8),
+            Text(
+              'Yêu cầu đăng nhập',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: Text(
+          'Bạn cần đăng nhập tài khoản để $action và lưu trữ kết quả bài thi.',
+          style: const TextStyle(fontSize: 14.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Để sau', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.blue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.push(
+                context,
+                MaterialPageRoute<void>(builder: (_) => const LoginPage()),
+              );
+            },
+            child: const Text('Đăng nhập', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _openExam(ExamSummary test) async {
+    if (widget.isGuest) {
+      _showGuestLoginDialog('làm bài thi thử "${test.title}"');
+      return;
+    }
     await Navigator.push(
       context,
       MaterialPageRoute<void>(

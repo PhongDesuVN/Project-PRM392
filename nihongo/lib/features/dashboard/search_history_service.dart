@@ -15,38 +15,56 @@ import '../../core/api.dart';
 /// 3. Nhận dạng viết tay "Viết Kanji" (KanjiHandwritingPage)
 class SearchHistoryService extends ChangeNotifier {
   SearchHistoryService._({ApiClient? apiClient})
-      : _apiClient = apiClient ?? ApiClient() {
+    : _apiClient = apiClient ?? ApiClient() {
     _init();
   }
 
   static final SearchHistoryService instance = SearchHistoryService._();
 
   final ApiClient _apiClient;
-  static const _storageKey = 'nihongo_recent_search_keywords';
   final _storage = const FlutterSecureStorage();
+  String? _currentEmail;
+  bool _isGuest = false;
 
-  // Danh sách từ khóa mẫu mặc định theo giao diện
-  static const List<String> defaultKeywords = [
-    'セ',
+  String get _storageKey => _currentEmail != null && _currentEmail!.isNotEmpty
+      ? 'nihongo_recent_search_keywords_${_currentEmail!}'
+      : 'nihongo_recent_search_keywords_guest';
+
+  static const List<String> defaultKeywords = [];
+  static const Set<String> _sampleMockKeywords = {
+    'hi',
     '出し',
+    '日',
+    'セ',
+    '夊',
+    '生活',
+    '小さい',
     '貸し',
     '多く',
-    '生活',
     '商協',
     '協',
-    '小さい',
-    '火',
-  ];
+  };
 
-  late List<String> _recentKeywords = List<String>.from(defaultKeywords);
+  late List<String> _recentKeywords = [];
 
   List<String> get recentKeywords => List.unmodifiable(_recentKeywords);
+
+  /// Chuyển đổi tài khoản người dùng để tải lịch sử tìm kiếm tương ứng
+  void switchUser(String? email) {
+    _currentEmail = email;
+    _isGuest = email == null || email.isEmpty || email == 'Khách';
+    _recentKeywords = [];
+    notifyListeners();
+    _init();
+  }
 
   Future<void> _init() async {
     // 1. Tải nhanh từ Local Storage để hiển thị UI tức thì
     await _loadFromStorage();
-    // 2. Đồng bộ 2 chiều với Database MySQL qua Backend API
-    await _syncWithBackend();
+    // 2. Đồng bộ 2 chiều với Database MySQL qua Backend API nếu không phải khách
+    if (!_isGuest) {
+      await _syncWithBackend();
+    }
   }
 
   Future<void> _loadFromStorage() async {
@@ -57,11 +75,12 @@ class SearchHistoryService extends ChangeNotifier {
         if (decoded is List) {
           final list = decoded
               .map((e) => e.toString().trim())
-              .where((e) => e.isNotEmpty)
+              .where((e) => e.isNotEmpty && !_sampleMockKeywords.contains(e))
               .toList();
-          if (list.isNotEmpty) {
-            _recentKeywords = list;
-            notifyListeners();
+          _recentKeywords = list;
+          notifyListeners();
+          if (list.length != decoded.length) {
+            _saveToStorage();
           }
         }
       }
@@ -74,26 +93,14 @@ class SearchHistoryService extends ChangeNotifier {
     try {
       final response = await _apiClient.get(ApiConfig.searchHistory);
       final rawList = response['keywords'];
-      if (rawList is List && rawList.isNotEmpty) {
+      if (rawList is List) {
         final list = rawList
             .map((e) => e.toString().trim())
-            .where((e) => e.isNotEmpty)
+            .where((e) => e.isNotEmpty && !_sampleMockKeywords.contains(e))
             .toList();
-        if (list.isNotEmpty) {
-          _recentKeywords = list;
-          notifyListeners();
-          _saveToStorage();
-          return;
-        }
-      }
-
-      // Nếu database chưa có dữ liệu nào nhưng local có sẵn từ khóa,
-      // đồng bộ danh sách từ khóa lên database
-      for (final kw in _recentKeywords.reversed) {
-        await _apiClient.post(
-          ApiConfig.searchHistory,
-          {'query': kw},
-        );
+        _recentKeywords = list;
+        notifyListeners();
+        _saveToStorage();
       }
     } catch (_) {
       // Offline fallback: sử dụng local storage an toàn
@@ -123,11 +130,12 @@ class SearchHistoryService extends ChangeNotifier {
     notifyListeners();
     _saveToStorage();
 
-    // Đồng bộ lên MySQL Database thông qua Backend API
-    _apiClient.post(
-      ApiConfig.searchHistory,
-      {'query': query},
-    ).catchError((_) => <String, dynamic>{});
+    // Đồng bộ lên MySQL Database thông qua Backend API nếu không phải khách
+    if (!_isGuest) {
+      _apiClient
+          .post(ApiConfig.searchHistory, {'query': query})
+          .catchError((_) => <String, dynamic>{});
+    }
   }
 
   /// Xóa một từ khóa khỏi danh sách tìm kiếm và đồng bộ xóa trên Database.
@@ -138,9 +146,13 @@ class SearchHistoryService extends ChangeNotifier {
       _saveToStorage();
 
       // Đồng bộ xóa trên Database
-      _apiClient.delete(
-        '${ApiConfig.searchHistory}?query=${Uri.encodeComponent(query)}',
-      ).catchError((_) => <String, dynamic>{});
+      if (!_isGuest) {
+        _apiClient
+            .delete(
+              '${ApiConfig.searchHistory}?query=${Uri.encodeComponent(query)}',
+            )
+            .catchError((_) => <String, dynamic>{});
+      }
     }
   }
 
@@ -150,9 +162,11 @@ class SearchHistoryService extends ChangeNotifier {
     notifyListeners();
     _saveToStorage();
 
-    _apiClient
-        .delete('${ApiConfig.searchHistory}/clear')
-        .catchError((_) => <String, dynamic>{});
+    if (!_isGuest) {
+      _apiClient
+          .delete('${ApiConfig.searchHistory}/clear')
+          .catchError((_) => <String, dynamic>{});
+    }
   }
 
   /// Đặt lại danh sách mặc định (phục vụ test).

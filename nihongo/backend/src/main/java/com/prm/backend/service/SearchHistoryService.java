@@ -15,9 +15,19 @@ public class SearchHistoryService {
         this.repository = repository;
     }
 
+    public SearchHistoryResponse addKeyword(int userId, String query) {
+        repository.addKeyword(userId, query);
+        return getRecentKeywords(userId);
+    }
+
     public SearchHistoryResponse addKeyword(String query) {
         repository.addKeyword(query);
         return getRecentKeywords();
+    }
+
+    public SearchHistoryResponse getRecentKeywords(int userId) {
+        List<String> keywords = repository.getRecentKeywords(userId, 20);
+        return new SearchHistoryResponse(keywords);
     }
 
     public SearchHistoryResponse getRecentKeywords() {
@@ -25,9 +35,19 @@ public class SearchHistoryService {
         return new SearchHistoryResponse(keywords);
     }
 
+    public SearchHistoryResponse deleteKeyword(int userId, String query) {
+        repository.deleteKeyword(userId, query);
+        return getRecentKeywords(userId);
+    }
+
     public SearchHistoryResponse deleteKeyword(String query) {
         repository.deleteKeyword(query);
         return getRecentKeywords();
+    }
+
+    public SearchHistoryResponse clearAll(int userId) {
+        repository.clearAll(userId);
+        return getRecentKeywords(userId);
     }
 
     public SearchHistoryResponse clearAll() {
@@ -35,4 +55,3 @@ public class SearchHistoryService {
         return getRecentKeywords();
     }
 }
-

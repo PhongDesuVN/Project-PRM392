@@ -10,6 +10,7 @@ import '../auth/login/login_page.dart';
 import 'dictionary/kanji_handwriting_page.dart';
 import 'dictionary/dictionary_tab.dart';
 import 'home_tab.dart';
+import 'learn/notebook/services/notebook_service.dart';
 import 'learn_tab.dart';
 import 'learning_topic.dart';
 import 'mock_exam/mock_exam_tab.dart';
@@ -40,6 +41,64 @@ class _DashboardPageState extends State<DashboardPage> {
   String _dictionaryQuery = '';
   int _learnInitialTabIndex = 0;
 
+  bool get _isGuest => widget.email.isEmpty || widget.fullName == 'Khách';
+
+  @override
+  void initState() {
+    super.initState();
+    NotebookService.instance.switchUser(
+      email: _isGuest ? null : widget.email,
+      userId: null,
+      isGuest: _isGuest,
+    );
+    SearchHistoryService.instance.switchUser(_isGuest ? null : widget.email);
+  }
+
+  void _requireLogin(String featureName) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: const [
+            Icon(Icons.lock_outline_rounded, color: AppColors.blue),
+            SizedBox(width: 8),
+            Text(
+              'Yêu cầu đăng nhập',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: Text(
+          'Bạn cần đăng nhập tài khoản để sử dụng $featureName và lưu tiến độ học tập cá nhân.',
+          style: const TextStyle(fontSize: 14.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Để sau', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.blue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.push(
+                context,
+                MaterialPageRoute<void>(builder: (_) => const LoginPage()),
+              );
+            },
+            child: const Text('Đăng nhập', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _authService.dispose();
@@ -56,6 +115,10 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _openTopic(LearningTopic topic) {
+    if (_isGuest) {
+      _requireLogin('học bài "${topic.title}"');
+      return;
+    }
     Navigator.push(
       context,
       MaterialPageRoute<void>(builder: (_) => TopicDetailPage(topic: topic)),
@@ -95,6 +158,10 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _openProfile() {
+    if (_isGuest) {
+      _requireLogin('Hồ sơ cá nhân');
+      return;
+    }
     Navigator.push(
       context,
       MaterialPageRoute<void>(
@@ -132,6 +199,12 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Future<void> _logout() async {
     await _authService.logout();
+    NotebookService.instance.switchUser(
+      email: null,
+      userId: null,
+      isGuest: true,
+    );
+    SearchHistoryService.instance.switchUser(null);
     try {
       await GoogleSignIn().signOut();
       await FirebaseAuth.instance.signOut();
@@ -180,9 +253,10 @@ class _DashboardPageState extends State<DashboardPage> {
           key: ValueKey('learn_tab_$_learnInitialTabIndex'),
           initialTabIndex: _learnInitialTabIndex,
           onTopicTap: _openTopic,
+          isGuest: _isGuest,
         );
       default:
-        return const MockExamTab();
+        return MockExamTab(isGuest: _isGuest);
     }
   }
 

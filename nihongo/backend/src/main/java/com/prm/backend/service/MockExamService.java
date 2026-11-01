@@ -18,8 +18,12 @@ public class MockExamService {
         this.repository = repository;
     }
 
-    public ExamListResponse getTests(String level, String type) {
-        return new ExamListResponse(repository.findTests(level, type));
+    public ExamListResponse getTests(int userId, String level, String type) {
+        return getTests(Integer.valueOf(userId), level, type);
+    }
+
+    public ExamListResponse getTests(Integer userId, String level, String type) {
+        return new ExamListResponse(repository.findTests(userId, level, type));
     }
 
     public ExamDetail getTest(int testId) {
@@ -31,7 +35,7 @@ public class MockExamService {
 
     /** Cham diem tren server: client chi gui lua chon, khong bao gio nhan dap an truoc khi nop. */
     @Transactional
-    public SubmitResponse submit(int testId, SubmitRequest request) {
+    public SubmitResponse submit(int userId, int testId, SubmitRequest request) {
         repository.findTest(testId).orElseThrow(() -> new BusinessException("Không tìm thấy đề thi"));
         Map<Integer, AnswerKey> keys = repository.findAnswerKeys(testId);
         if (keys.isEmpty()) {
@@ -43,7 +47,6 @@ public class MockExamService {
             for (AnswerItem a : request.answers()) {
                 if (a == null || a.questionId() == null || a.optionId() == null) continue;
                 AnswerKey key = keys.get(a.questionId());
-                // Bo qua cau khong thuoc de hoac lua chon khong thuoc cau do.
                 if (key != null && key.optionIds.contains(a.optionId())) {
                     selected.put(a.questionId(), a.optionId());
                 }
@@ -64,7 +67,7 @@ public class MockExamService {
         }
 
         int total = keys.size();
-        int attemptId = repository.saveAttempt(testId, correct, selected);
+        int attemptId = repository.saveAttempt(userId, testId, correct, selected);
         List<SectionResult> sections = bySection.entrySet().stream()
                 .map(e -> new SectionResult(e.getKey(), e.getValue()[0], e.getValue()[1]))
                 .toList();

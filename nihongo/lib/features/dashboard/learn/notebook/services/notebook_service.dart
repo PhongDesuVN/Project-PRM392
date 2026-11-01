@@ -32,6 +32,7 @@ class NotebookWord {
     required this.status,
     this.reviewCount = 1,
     this.notebookId,
+    this.wordType,
   });
 
   final String word;
@@ -41,6 +42,7 @@ class NotebookWord {
   NotebookWordStatus status;
   int reviewCount;
   int? notebookId;
+  final String? wordType;
 
   TopicWord toTopicWord() {
     return TopicWord(
@@ -62,6 +64,7 @@ class NotebookWord {
       status: NotebookWordStatus.fromCode(json['status'] as String? ?? ''),
       reviewCount: json['reviewCount'] as int? ?? 1,
       notebookId: json['notebookId'] as int?,
+      wordType: json['wordType'] as String?,
     );
   }
 
@@ -72,6 +75,7 @@ class NotebookWord {
     'meaning': meaning,
     'status': status.code,
     if (notebookId != null) 'notebookId': notebookId,
+    if (wordType != null) 'wordType': wordType,
   };
 }
 
@@ -114,16 +118,42 @@ class NotebookService extends ChangeNotifier {
   NotebookItem? _selectedNotebook;
   bool _isInitialized = false;
   bool _isLoadingNotebooks = false;
+  bool isGuest = false;
+  String? _currentUserEmail;
+  int? _currentUserId;
 
   Map<String, NotebookWord> get notebookMap => Map.unmodifiable(_notebookMap);
   List<NotebookItem> get notebooks => List.unmodifiable(_notebooks);
   NotebookItem? get selectedNotebook => _selectedNotebook;
   bool get isLoadingNotebooks => _isLoadingNotebooks;
 
-  int get totalReviewWordsCount {
-    if (_notebookMap.isNotEmpty) {
-      return _notebookMap.length;
+  /// Chuyển đổi người dùng: Khách hoặc tài khoản cụ thể.
+  /// Giúp phân tách độc lập toàn bộ sổ tay và thống kê học tập giữa các tài khoản khác nhau.
+  void switchUser({String? email, int? userId, required bool isGuest}) {
+    this.isGuest = isGuest;
+    _currentUserEmail = isGuest ? null : email;
+    _currentUserId = isGuest ? null : userId;
+    ApiClient.defaultUserEmail = _currentUserEmail;
+    ApiClient.defaultUserId = _currentUserId;
+
+    _notebookMap.clear();
+    _notebooks.clear();
+    _selectedNotebook = null;
+    notifyListeners();
+
+    if (!isGuest) {
+      refreshAll();
     }
+  }
+
+  int get totalReviewWordsCount {
+    if (isGuest) return 0;
+    int count = 0;
+    for (final w in _notebookMap.values) {
+      if (w.notebookId != null) count++;
+    }
+    if (count > 0) return count;
+
     int sum = 0;
     for (final nb in _notebooks) {
       sum += nb.wordCount;
@@ -132,12 +162,20 @@ class NotebookService extends ChangeNotifier {
   }
 
   NotebookStats get stats {
+    if (isGuest) {
+      return const NotebookStats(
+        chuaThuoc: 0,
+        thuocLoMo: 0,
+        thuocKhaKha: 0,
+        thuocLauLau: 0,
+      );
+    }
     int chuaThuoc = 0;
     int thuocLoMo = 0;
-    int thuocKhaKha = 0;
     int thuocLauLau = 0;
 
     for (final w in _notebookMap.values) {
+      // Hiển thị cả từ học ở Thư viện và Sổ tay lên phần Tổng quan
       switch (w.status) {
         case NotebookWordStatus.chuaThuoc:
           chuaThuoc++;
@@ -146,8 +184,6 @@ class NotebookService extends ChangeNotifier {
           thuocLoMo++;
           break;
         case NotebookWordStatus.thuocKhaKha:
-          thuocKhaKha++;
-          break;
         case NotebookWordStatus.thuocLauLau:
           thuocLauLau++;
           break;
@@ -156,7 +192,7 @@ class NotebookService extends ChangeNotifier {
     return NotebookStats(
       chuaThuoc: chuaThuoc,
       thuocLoMo: thuocLoMo,
-      thuocKhaKha: thuocKhaKha,
+      thuocKhaKha: 0,
       thuocLauLau: thuocLauLau,
     );
   }
@@ -165,6 +201,7 @@ class NotebookService extends ChangeNotifier {
   Future<void> init() async {
     if (_isInitialized) return;
     _isInitialized = true;
+    if (isGuest) return;
     await Future.wait([
       fetchStatsAndWords(),
       fetchNotebooks(),
@@ -173,6 +210,12 @@ class NotebookService extends ChangeNotifier {
 
   /// Tải danh sách các sổ tay từ Backend MySQL
   Future<void> fetchNotebooks() async {
+    if (isGuest) {
+      _notebooks.clear();
+      _isLoadingNotebooks = false;
+      notifyListeners();
+      return;
+    }
     _isLoadingNotebooks = true;
     notifyListeners();
 
@@ -186,37 +229,21 @@ class NotebookService extends ChangeNotifier {
             _notebooks.add(NotebookItem.fromJson(item));
           }
         }
-      } else {
-        _setFallbackNotebooks();
       }
     } catch (_) {
-      // Khi server offline thì dùng danh sách mặc định giống giao diện
-      if (_notebooks.isEmpty) {
-        _setFallbackNotebooks();
-      }
+      // Khi offline
     } finally {
       _isLoadingNotebooks = false;
       notifyListeners();
     }
   }
 
-  void _setFallbackNotebooks() {
-    _notebooks.clear();
-    _notebooks.addAll([
-      const NotebookItem(
-        id: 1,
-        title: 'Tesr',
-        description: 'Sổ tay mẫu',
-        wordCount: 0,
-        createdAt: '29/10/2026',
-      ),
-      NotebookItem(
-        id: 2,
-        title: 'Huy',
-        description: 'Sổ tay từ vựng',
-        wordCount: _notebookMap.isNotEmpty ? _notebookMap.length : 12,
-        createdAt: '29/10/2026',
-      ),
+  /// Làm mới toàn bộ danh sách sổ tay và thống kê từ vựng từ MySQL
+  Future<void> refreshAll() async {
+    if (isGuest) return;
+    await Future.wait([
+      fetchNotebooks(),
+      fetchStatsAndWords(),
     ]);
   }
 
@@ -311,10 +338,16 @@ class NotebookService extends ChangeNotifier {
   }
 
   Future<void> fetchStatsAndWords() async {
+    if (isGuest) {
+      _notebookMap.clear();
+      notifyListeners();
+      return;
+    }
     try {
       final response = await _apiClient.get(ApiConfig.notebookWords);
       final rawWords = response['words'];
       if (rawWords is List) {
+        _notebookMap.clear();
         for (final item in rawWords) {
           if (item is Map<String, dynamic>) {
             final w = NotebookWord.fromJson(item);
@@ -326,6 +359,82 @@ class NotebookService extends ChangeNotifier {
     } catch (_) {
       // Khi server offline thì dùng dữ liệu local
     }
+  }
+
+  /// Lấy danh sách từ thuộc một sổ tay từ Backend MySQL
+  Future<List<NotebookWord>> getWordsOfNotebook(int notebookId) async {
+    try {
+      final response = await _apiClient.get('${ApiConfig.notebook}/$notebookId/words');
+      final rawWords = response['words'];
+      if (rawWords is List) {
+        final List<NotebookWord> list = [];
+        for (final item in rawWords) {
+          if (item is Map<String, dynamic>) {
+            final w = NotebookWord.fromJson(item);
+            _notebookMap[w.word] = w;
+            list.add(w);
+          }
+        }
+        notifyListeners();
+        return list;
+      }
+    } catch (_) {
+      // Fallback lấy từ local cache
+    }
+    return _notebookMap.values.where((w) => w.notebookId == notebookId).toList();
+  }
+
+  /// Thêm từ mới vào sổ tay và đồng bộ trực tiếp vào database MySQL
+  Future<NotebookWord?> addWordToNotebook(
+    int notebookId, {
+    required String word,
+    required String reading,
+    required String meaning,
+    String? romaji,
+    String? wordType,
+  }) async {
+    final trimmedWord = word.trim();
+    if (trimmedWord.isEmpty) return null;
+
+    final requestBody = {
+      'word': trimmedWord,
+      'reading': reading.trim(),
+      'romaji': romaji?.trim() ?? '',
+      'meaning': meaning.trim(),
+      'wordType': wordType ?? 'Từ vựng',
+    };
+
+    NotebookWord? created;
+    try {
+      final response = await _apiClient.post(
+        '${ApiConfig.notebook}/$notebookId/words',
+        requestBody,
+      );
+      created = NotebookWord.fromJson(response);
+    } catch (_) {
+      // Fallback local
+      created = NotebookWord(
+        word: trimmedWord,
+        reading: reading.trim(),
+        romaji: romaji?.trim(),
+        meaning: meaning.trim(),
+        status: NotebookWordStatus.chuaThuoc,
+        notebookId: notebookId,
+        wordType: wordType,
+      );
+    }
+
+    _notebookMap[created.word] = created;
+
+    // Cập nhật số lượng từ của sổ tay trong danh sách
+    final idx = _notebooks.indexWhere((n) => n.id == notebookId);
+    if (idx != -1) {
+      final old = _notebooks[idx];
+      _notebooks[idx] = old.copyWith(wordCount: old.wordCount + 1);
+    }
+
+    notifyListeners();
+    return created;
   }
 
   /// Lưu kết quả sau khi kết thúc buổi học Flashcard và bấm "Hoàn tất"
@@ -375,14 +484,12 @@ class NotebookService extends ChangeNotifier {
       syncItems.add(_notebookMap[word.word]!.toJson());
     }
 
-    // 3. Từ đã thuộc (Nút Check xanh lá)
+    // 3. Từ đã thuộc làu làu (Nút Check xanh lá - bỏ thuộc kha khá)
     for (final word in masteredWords) {
       final existing = _notebookMap[word.word];
       if (existing != null) {
         existing.reviewCount++;
-        existing.status = existing.reviewCount >= 2
-            ? NotebookWordStatus.thuocLauLau
-            : NotebookWordStatus.thuocKhaKha;
+        existing.status = NotebookWordStatus.thuocLauLau;
       } else {
         _notebookMap[word.word] = NotebookWord(
           word: word.word,
@@ -409,15 +516,20 @@ class NotebookService extends ChangeNotifier {
     }
   }
 
-  /// Lấy danh sách từ theo trạng thái
+  /// Lấy danh sách từ theo trạng thái (hiển thị đầy đủ cả từ ở Thư viện và ở các Sổ tay)
   List<TopicWord> getWordsByStatus(NotebookWordStatus status) {
     return _notebookMap.values
-        .where((w) => w.status == status)
+        .where((w) {
+          if (status == NotebookWordStatus.thuocLauLau) {
+            return w.status == NotebookWordStatus.thuocLauLau || w.status == NotebookWordStatus.thuocKhaKha;
+          }
+          return w.status == status;
+        })
         .map((w) => w.toTopicWord())
         .toList();
   }
 
-  /// Lấy toàn bộ từ để ôn tập sổ tay
+  /// Lấy toàn bộ từ để ôn tập sổ tay (chỉ lấy từ thuộc về sổ tay)
   List<TopicWord> getAllReviewWords({int? notebookId}) {
     if (notebookId != null) {
       final list = _notebookMap.values
@@ -426,7 +538,10 @@ class NotebookService extends ChangeNotifier {
           .toList();
       if (list.isNotEmpty) return list;
     }
-    return _notebookMap.values.map((w) => w.toTopicWord()).toList();
+    return _notebookMap.values
+        .where((w) => w.notebookId != null)
+        .map((w) => w.toTopicWord())
+        .toList();
   }
 
   @visibleForTesting
@@ -434,6 +549,11 @@ class NotebookService extends ChangeNotifier {
     _notebookMap.clear();
     _notebooks.clear();
     _selectedNotebook = null;
+    isGuest = false;
+    _currentUserEmail = null;
+    _currentUserId = null;
+    ApiClient.defaultUserEmail = null;
+    ApiClient.defaultUserId = null;
     notifyListeners();
   }
 }

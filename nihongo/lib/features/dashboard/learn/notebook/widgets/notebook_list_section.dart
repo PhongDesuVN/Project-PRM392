@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../../../shared/ui.dart';
+import '../../../../auth/login/login_page.dart';
 import '../models/notebook_item.dart';
 import '../services/notebook_service.dart';
 import 'create_notebook_dialog.dart';
@@ -42,7 +43,56 @@ class _NotebookListSectionState extends State<NotebookListSection> {
     super.dispose();
   }
 
+  void _showGuestLoginDialog(BuildContext context, String action) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: const [
+            Icon(Icons.lock_outline_rounded, color: AppColors.blue),
+            SizedBox(width: 8),
+            Text(
+              'Yêu cầu đăng nhập',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: Text(
+          'Bạn cần đăng nhập tài khoản để $action và lưu trữ dữ liệu cá nhân.',
+          style: const TextStyle(fontSize: 14.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Để sau', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.blue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.push(
+                context,
+                MaterialPageRoute<void>(builder: (_) => const LoginPage()),
+              );
+            },
+            child: const Text('Đăng nhập', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _toggleSearch() {
+    if (NotebookService.instance.isGuest) {
+      _showGuestLoginDialog(context, 'tìm kiếm sổ tay');
+      return;
+    }
     setState(() {
       _isSearchOpen = !_isSearchOpen;
       if (!_isSearchOpen) {
@@ -53,6 +103,10 @@ class _NotebookListSectionState extends State<NotebookListSection> {
   }
 
   Future<void> _createNewNotebook() async {
+    if (NotebookService.instance.isGuest) {
+      _showGuestLoginDialog(context, 'tạo sổ tay mới');
+      return;
+    }
     final result = await CreateNotebookDialog.show(context);
     if (result != null && mounted) {
       final title = result['title'] ?? '';
@@ -72,6 +126,10 @@ class _NotebookListSectionState extends State<NotebookListSection> {
   }
 
   Future<void> _renameNotebook(NotebookItem item) async {
+    if (NotebookService.instance.isGuest) {
+      _showGuestLoginDialog(context, 'chỉnh sửa sổ tay');
+      return;
+    }
     final result = await CreateNotebookDialog.show(
       context,
       initialTitle: item.title,
@@ -96,6 +154,10 @@ class _NotebookListSectionState extends State<NotebookListSection> {
   }
 
   Future<void> _confirmDelete(NotebookItem item) async {
+    if (NotebookService.instance.isGuest) {
+      _showGuestLoginDialog(context, 'xóa sổ tay');
+      return;
+    }
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -205,7 +267,13 @@ class _NotebookListSectionState extends State<NotebookListSection> {
                 const SizedBox(width: 8),
                 InkWell(
                   borderRadius: BorderRadius.circular(20),
-                  onTap: () => service.fetchNotebooks(),
+                  onTap: () {
+                    if (NotebookService.instance.isGuest) {
+                      _showGuestLoginDialog(context, 'làm mới danh sách sổ tay');
+                      return;
+                    }
+                    service.refreshAll();
+                  },
                   child: Padding(
                     padding: const EdgeInsets.all(4),
                     child: service.isLoadingNotebooks
@@ -368,14 +436,7 @@ class _NotebookListSectionState extends State<NotebookListSection> {
                   key: ValueKey('notebook_${item.id}'),
                   notebook: item,
                   isSelected: service.selectedNotebook?.id == item.id,
-                  onTap: () {
-                    // Chuyển đổi chọn sổ tay
-                    if (service.selectedNotebook?.id == item.id) {
-                      service.selectNotebook(null);
-                    } else {
-                      service.selectNotebook(item);
-                    }
-                  },
+                  onTap: () => widget.onViewNotebookWords(item),
                   onReview: () => widget.onReviewNotebook(item),
                   onViewWords: () => widget.onViewNotebookWords(item),
                   onRename: () => _renameNotebook(item),

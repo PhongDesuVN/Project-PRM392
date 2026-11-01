@@ -14,37 +14,38 @@ import java.util.*;
 public class MockExamRepository {
 
     private static final Logger log = LoggerFactory.getLogger(MockExamRepository.class);
-
-    /** App chua gui token cho cac API hoc tap nen dung user mac dinh, giong search-history. */
-    private static final int DEFAULT_USER_ID = 1;
-
     private final JdbcTemplate jdbcTemplate;
 
     public MockExamRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        initDefaultUser();
     }
 
-    private void initDefaultUser() {
-        try {
-            jdbcTemplate.update("""
-                INSERT IGNORE INTO users (id, email, full_name, role)
-                VALUES (1, 'default@nihongo.app', 'Nihongo User', 'user')
-            """);
-        } catch (Exception e) {
-            log.warn("Không thể tạo user mặc định: {}", e.getMessage());
+    public List<ExamSummary> findTests(int userId, String level, String type) {
+        return findTests(Integer.valueOf(userId), level, type);
+    }
+
+    public List<ExamSummary> findTests(Integer userId, String level, String type) {
+        StringBuilder sql = new StringBuilder();
+        List<Object> args = new ArrayList<>();
+
+        if (userId != null && userId > 0) {
+            sql.append("""
+                    SELECT t.id, t.title, t.level, t.test_type, t.duration_minutes, t.total_questions,
+                           COUNT(a.id) AS attempts, COALESCE(MAX(a.score), 0) AS best_score
+                    FROM jlpt_tests t
+                    LEFT JOIN jlpt_user_attempts a ON a.test_id = t.id AND a.user_id = ?
+                    WHERE 1 = 1
+                    """);
+            args.add(userId);
+        } else {
+            sql.append("""
+                    SELECT t.id, t.title, t.level, t.test_type, t.duration_minutes, t.total_questions,
+                           0 AS attempts, 0 AS best_score
+                    FROM jlpt_tests t
+                    WHERE 1 = 1
+                    """);
         }
-    }
 
-    public List<ExamSummary> findTests(String level, String type) {
-        StringBuilder sql = new StringBuilder("""
-                SELECT t.id, t.title, t.level, t.test_type, t.duration_minutes, t.total_questions,
-                       COUNT(a.id) AS attempts, COALESCE(MAX(a.score), 0) AS best_score
-                FROM jlpt_tests t
-                LEFT JOIN jlpt_user_attempts a ON a.test_id = t.id AND a.user_id = ?
-                WHERE 1 = 1
-                """);
-        List<Object> args = new ArrayList<>(List.of(DEFAULT_USER_ID));
         if (level != null && !level.isBlank()) {
             sql.append(" AND t.level = ?");
             args.add(level.trim().toUpperCase());
@@ -137,10 +138,10 @@ public class MockExamRepository {
         return keys;
     }
 
-    public int saveAttempt(int testId, int score, Map<Integer, Integer> selectedByQuestion) {
+    public int saveAttempt(int userId, int testId, int score, Map<Integer, Integer> selectedByQuestion) {
         jdbcTemplate.update("""
                 INSERT INTO jlpt_user_attempts (user_id, test_id, score) VALUES (?, ?, ?)
-                """, DEFAULT_USER_ID, testId, score);
+                """, userId, testId, score);
         Integer attemptId = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Integer.class);
 
         for (Map.Entry<Integer, Integer> e : selectedByQuestion.entrySet()) {

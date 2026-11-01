@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/api.dart';
 import '../../../../shared/ui.dart';
 import '../../../alphabet/alphabet_page.dart';
 import '../../../alphabet/models/alphabet_models.dart';
+import '../../../auth/login/login_page.dart';
 import '../../../learn/topic_words/topic_words_page.dart';
 import '../../learning_topic.dart';
 import 'widgets/alphabet_card.dart';
@@ -14,9 +16,10 @@ import 'widgets/library_topic_card.dart';
 /// - Chuyên ngành (có nút Xem thêm): Xe cộ, Vật liệu điện và nước, Thợ cơ khí, Lối sống
 /// - Khác: Giao tiếp hàng ngày, Du lịch & Ẩm thực
 class LibraryView extends StatefulWidget {
-  const LibraryView({super.key, this.onTopicTap});
+  const LibraryView({super.key, this.onTopicTap, this.isGuest = false});
 
   final ValueChanged<LearningTopic>? onTopicTap;
+  final bool isGuest;
 
   @override
   State<LibraryView> createState() => _LibraryViewState();
@@ -24,8 +27,121 @@ class LibraryView extends StatefulWidget {
 
 class _LibraryViewState extends State<LibraryView> {
   bool _isExpandedSpecialized = false;
+  late final ApiClient _apiClient = ApiClient();
+
+  static const Map<String, String> _defaultTopicCounts = {
+    'tu_vung_n4': '20 từ',
+    'ngu_phap_n4': '16 mục',
+    'han_tu_n4': '5 chữ',
+    'tu_vung_n5': '3 từ',
+    'xe_co': '4 mục',
+    'vat_lieu_dien_nuoc': '6 mục',
+    'tho_co_khi': '5 mục',
+    'loi_song': '4 mục',
+    'it_cntt': '6 mục',
+    'xay_dung': '4 mục',
+    'dieu_duong': '4 mục',
+    'khach_san_nha_hang': '4 mục',
+    'nong_nghiep': '3 mục',
+    'che_bien_thuc_pham': '3 mục',
+    'may_mac': '3 mục',
+    'kinh_doanh': '3 mục',
+    'giao_tiep_hang_ngay': '5 mục',
+    'du_lich_am_thuc': '4 mục',
+  };
+
+  late Map<String, String> _topicCounts = Map.from(_defaultTopicCounts);
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchTopicCounts();
+  }
+
+  @override
+  void dispose() {
+    _apiClient.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetchTopicCounts() async {
+    try {
+      final list = await _apiClient.getList(ApiConfig.topics);
+      if (list.isNotEmpty && mounted) {
+        final newCounts = Map<String, String>.from(_topicCounts);
+        for (final item in list) {
+          if (item is Map) {
+            final code = item['code']?.toString();
+            final countText = item['itemCountText']?.toString();
+            if (code != null && countText != null && countText.isNotEmpty) {
+              newCounts[code] = countText;
+            }
+          }
+        }
+        setState(() {
+          _topicCounts = newCounts;
+        });
+      }
+    } catch (_) {
+      // Dùng dữ liệu đếm mặc định nếu server offline
+    }
+  }
+
+  String _getCount(String topicCode) {
+    return _topicCounts[topicCode] ?? _defaultTopicCounts[topicCode] ?? '0 mục';
+  }
+
+  void _showGuestLoginDialog(BuildContext context, String action) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.lock_outline_rounded, color: AppColors.blue),
+            SizedBox(width: 8),
+            Text(
+              'Yêu cầu đăng nhập',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: Text(
+          'Bạn cần đăng nhập tài khoản để $action và lưu tiến độ học tập cá nhân.',
+          style: const TextStyle(fontSize: 14.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Để sau', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.blue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.push(
+                context,
+                MaterialPageRoute<void>(builder: (_) => const LoginPage()),
+              );
+            },
+            child: const Text('Đăng nhập', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
 
   void _handleTopicClick(BuildContext context, String title, String subtitle) {
+    if (widget.isGuest) {
+      _showGuestLoginDialog(context, 'học bài "$title"');
+      return;
+    }
+
     final topicCode = _resolveTopicCode(title);
 
     Navigator.push(
@@ -109,6 +225,10 @@ class _LibraryViewState extends State<LibraryView> {
                 badgeColor: const Color(0xFF1565C0),
                 badgeRotation: -0.15,
                 onTap: () {
+                  if (widget.isGuest) {
+                    _showGuestLoginDialog(context, 'học Bảng chữ cái');
+                    return;
+                  }
                   Navigator.push(
                     context,
                     MaterialPageRoute<void>(
@@ -129,6 +249,10 @@ class _LibraryViewState extends State<LibraryView> {
                 badgeColor: const Color(0xFFFFA000),
                 badgeRotation: 0.15,
                 onTap: () {
+                  if (widget.isGuest) {
+                    _showGuestLoginDialog(context, 'học Bảng chữ cái');
+                    return;
+                  }
                   Navigator.push(
                     context,
                     MaterialPageRoute<void>(
@@ -159,17 +283,24 @@ class _LibraryViewState extends State<LibraryView> {
             Expanded(
               child: LibraryTopicCard(
                 title: 'Từ vựng N4',
-                itemCountText: '523 từ',
-                onTap: () => _handleTopicClick(context, 'Từ vựng N4', '523 từ'),
+                itemCountText: _getCount('tu_vung_n4'),
+                onTap: () => _handleTopicClick(
+                  context,
+                  'Từ vựng N4',
+                  _getCount('tu_vung_n4'),
+                ),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: LibraryTopicCard(
                 title: 'Ngữ pháp N4',
-                itemCountText: '436 từ',
-                onTap: () =>
-                    _handleTopicClick(context, 'Ngữ pháp N4', '436 từ'),
+                itemCountText: _getCount('ngu_phap_n4'),
+                onTap: () => _handleTopicClick(
+                  context,
+                  'Ngữ pháp N4',
+                  _getCount('ngu_phap_n4'),
+                ),
               ),
             ),
           ],
@@ -180,16 +311,24 @@ class _LibraryViewState extends State<LibraryView> {
             Expanded(
               child: LibraryTopicCard(
                 title: 'Hán tự N4',
-                itemCountText: '167 từ',
-                onTap: () => _handleTopicClick(context, 'Hán tự N4', '167 từ'),
+                itemCountText: _getCount('han_tu_n4'),
+                onTap: () => _handleTopicClick(
+                  context,
+                  'Hán tự N4',
+                  _getCount('han_tu_n4'),
+                ),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: LibraryTopicCard(
                 title: 'Từ vựng N5',
-                itemCountText: '571 từ',
-                onTap: () => _handleTopicClick(context, 'Từ vựng N5', '571 từ'),
+                itemCountText: _getCount('tu_vung_n5'),
+                onTap: () => _handleTopicClick(
+                  context,
+                  'Từ vựng N5',
+                  _getCount('tu_vung_n5'),
+                ),
               ),
             ),
           ],
@@ -249,19 +388,23 @@ class _LibraryViewState extends State<LibraryView> {
             Expanded(
               child: LibraryTopicCard(
                 title: 'Xe cộ',
-                itemCountText: '4 mục',
-                onTap: () => _handleTopicClick(context, 'Xe cộ', '4 mục'),
+                itemCountText: _getCount('xe_co'),
+                onTap: () => _handleTopicClick(
+                  context,
+                  'Xe cộ',
+                  _getCount('xe_co'),
+                ),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: LibraryTopicCard(
                 title: 'Vật liệu điện và nước',
-                itemCountText: '6 mục',
+                itemCountText: _getCount('vat_lieu_dien_nuoc'),
                 onTap: () => _handleTopicClick(
                   context,
                   'Vật liệu điện và nước',
-                  '6 mục',
+                  _getCount('vat_lieu_dien_nuoc'),
                 ),
               ),
             ),
@@ -273,16 +416,24 @@ class _LibraryViewState extends State<LibraryView> {
             Expanded(
               child: LibraryTopicCard(
                 title: 'Thợ cơ khí',
-                itemCountText: '7 mục',
-                onTap: () => _handleTopicClick(context, 'Thợ cơ khí', '7 mục'),
+                itemCountText: _getCount('tho_co_khi'),
+                onTap: () => _handleTopicClick(
+                  context,
+                  'Thợ cơ khí',
+                  _getCount('tho_co_khi'),
+                ),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: LibraryTopicCard(
                 title: 'Lối sống',
-                itemCountText: '12 mục',
-                onTap: () => _handleTopicClick(context, 'Lối sống', '12 mục'),
+                itemCountText: _getCount('loi_song'),
+                onTap: () => _handleTopicClick(
+                  context,
+                  'Lối sống',
+                  _getCount('loi_song'),
+                ),
               ),
             ),
           ],
@@ -294,11 +445,11 @@ class _LibraryViewState extends State<LibraryView> {
               Expanded(
                 child: LibraryTopicCard(
                   title: 'Công nghệ thông tin',
-                  itemCountText: '6 mục',
+                  itemCountText: _getCount('it_cntt'),
                   onTap: () => _handleTopicClick(
                     context,
                     'Công nghệ thông tin',
-                    '6 mục',
+                    _getCount('it_cntt'),
                   ),
                 ),
               ),
@@ -306,8 +457,12 @@ class _LibraryViewState extends State<LibraryView> {
               Expanded(
                 child: LibraryTopicCard(
                   title: 'Xây dựng',
-                  itemCountText: '4 mục',
-                  onTap: () => _handleTopicClick(context, 'Xây dựng', '4 mục'),
+                  itemCountText: _getCount('xay_dung'),
+                  onTap: () => _handleTopicClick(
+                    context,
+                    'Xây dựng',
+                    _getCount('xay_dung'),
+                  ),
                 ),
               ),
             ],
@@ -318,11 +473,11 @@ class _LibraryViewState extends State<LibraryView> {
               Expanded(
                 child: LibraryTopicCard(
                   title: 'Điều dưỡng & Y tế',
-                  itemCountText: '4 mục',
+                  itemCountText: _getCount('dieu_duong'),
                   onTap: () => _handleTopicClick(
                     context,
                     'Điều dưỡng & Y tế',
-                    '4 mục',
+                    _getCount('dieu_duong'),
                   ),
                 ),
               ),
@@ -330,11 +485,11 @@ class _LibraryViewState extends State<LibraryView> {
               Expanded(
                 child: LibraryTopicCard(
                   title: 'Khách sạn & Nhà hàng',
-                  itemCountText: '4 mục',
+                  itemCountText: _getCount('khach_san_nha_hang'),
                   onTap: () => _handleTopicClick(
                     context,
                     'Khách sạn & Nhà hàng',
-                    '4 mục',
+                    _getCount('khach_san_nha_hang'),
                   ),
                 ),
               ),
@@ -346,19 +501,23 @@ class _LibraryViewState extends State<LibraryView> {
               Expanded(
                 child: LibraryTopicCard(
                   title: 'Nông nghiệp',
-                  itemCountText: '3 mục',
-                  onTap: () => _handleTopicClick(context, 'Nông nghiệp', '3 mục'),
+                  itemCountText: _getCount('nong_nghiep'),
+                  onTap: () => _handleTopicClick(
+                    context,
+                    'Nông nghiệp',
+                    _getCount('nong_nghiep'),
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: LibraryTopicCard(
                   title: 'Chế biến thực phẩm',
-                  itemCountText: '3 mục',
+                  itemCountText: _getCount('che_bien_thuc_pham'),
                   onTap: () => _handleTopicClick(
                     context,
                     'Chế biến thực phẩm',
-                    '3 mục',
+                    _getCount('che_bien_thuc_pham'),
                   ),
                 ),
               ),
@@ -370,19 +529,23 @@ class _LibraryViewState extends State<LibraryView> {
               Expanded(
                 child: LibraryTopicCard(
                   title: 'May mặc',
-                  itemCountText: '3 mục',
-                  onTap: () => _handleTopicClick(context, 'May mặc', '3 mục'),
+                  itemCountText: _getCount('may_mac'),
+                  onTap: () => _handleTopicClick(
+                    context,
+                    'May mặc',
+                    _getCount('may_mac'),
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: LibraryTopicCard(
                   title: 'Kinh doanh & Thương mại',
-                  itemCountText: '3 mục',
+                  itemCountText: _getCount('kinh_doanh'),
                   onTap: () => _handleTopicClick(
                     context,
                     'Kinh doanh & Thương mại',
-                    '3 mục',
+                    _getCount('kinh_doanh'),
                   ),
                 ),
               ),
@@ -407,18 +570,24 @@ class _LibraryViewState extends State<LibraryView> {
             Expanded(
               child: LibraryTopicCard(
                 title: 'Giao tiếp hàng ngày',
-                itemCountText: '15 mục',
-                onTap: () =>
-                    _handleTopicClick(context, 'Giao tiếp hàng ngày', '15 mục'),
+                itemCountText: _getCount('giao_tiep_hang_ngay'),
+                onTap: () => _handleTopicClick(
+                  context,
+                  'Giao tiếp hàng ngày',
+                  _getCount('giao_tiep_hang_ngay'),
+                ),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: LibraryTopicCard(
                 title: 'Du lịch & Ẩm thực',
-                itemCountText: '8 mục',
-                onTap: () =>
-                    _handleTopicClick(context, 'Du lịch & Ẩm thực', '8 mục'),
+                itemCountText: _getCount('du_lich_am_thuc'),
+                onTap: () => _handleTopicClick(
+                  context,
+                  'Du lịch & Ẩm thực',
+                  _getCount('du_lich_am_thuc'),
+                ),
               ),
             ),
           ],

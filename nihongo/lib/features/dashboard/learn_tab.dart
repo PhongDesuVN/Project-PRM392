@@ -15,10 +15,12 @@ class LearnTab extends StatefulWidget {
     super.key,
     required this.onTopicTap,
     this.initialTabIndex = 0,
+    this.isGuest = false,
   });
 
   final ValueChanged<LearningTopic> onTopicTap;
   final int initialTabIndex;
+  final bool isGuest;
 
   @override
   State<LearnTab> createState() => _LearnTabState();
@@ -76,6 +78,7 @@ class _LearnTabState extends State<LearnTab> {
                   : LibraryView(
                       key: const ValueKey('library_view'),
                       onTopicTap: widget.onTopicTap,
+                      isGuest: widget.isGuest,
                     ),
             ),
           ),

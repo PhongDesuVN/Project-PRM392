@@ -348,6 +348,19 @@ class _TopicWordsPageState extends State<TopicWordsPage> {
                   ),
                 ),
                 const SizedBox(height: 10),
+                if (word.exampleJp != null && word.exampleJp!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      '${word.exampleJp!}\n${word.exampleVi ?? ''}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.blueGrey.shade700,
+                      ),
+                    ),
+                  ),
 
                 // Nghĩa tiếng Việt
                 Text(

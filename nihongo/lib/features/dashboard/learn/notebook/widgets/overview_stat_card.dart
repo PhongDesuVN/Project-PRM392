@@ -8,7 +8,7 @@ class OverviewStatCard extends StatelessWidget {
     required this.indicatorColor,
     this.value = '--',
     this.count,
-    this.unit = 'câu',
+    this.unit = 'từ',
     this.onTap,
   });
 
@@ -33,7 +33,7 @@ class OverviewStatCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(14),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: const Color(0xFFE9EDF1), width: 1.2),
@@ -43,13 +43,13 @@ class OverviewStatCard extends StatelessWidget {
             children: [
               Container(
                 width: 3.5,
-                height: 42,
+                height: 38,
                 decoration: BoxDecoration(
                   color: indicatorColor,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,7 +58,7 @@ class OverviewStatCard extends StatelessWidget {
                     Text(
                       title,
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 12.5,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF2C3E50),
                       ),
@@ -84,7 +84,7 @@ class OverviewStatCard extends StatelessWidget {
                                 ? '$effectiveCount'
                                 : value.replaceAll(RegExp(r'[^0-9]'), ''),
                             style: const TextStyle(
-                              fontSize: 18,
+                              fontSize: 17,
                               fontWeight: FontWeight.w800,
                               color: Color(0xFF1E242B),
                             ),
@@ -92,7 +92,7 @@ class OverviewStatCard extends StatelessWidget {
                           Text(
                             unit,
                             style: const TextStyle(
-                              fontSize: 12.5,
+                              fontSize: 11.5,
                               color: Color(0xFF718096),
                               fontWeight: FontWeight.w500,
                             ),

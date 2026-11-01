@@ -14,6 +14,8 @@ import '../../../shared/nihon_logo.dart';
 import '../auth_service.dart';
 import '../forgot_password/forgot_password_dialog.dart';
 import '../../dashboard/dashboard_page.dart';
+import '../../dashboard/learn/notebook/services/notebook_service.dart';
+import '../../dashboard/search_history_service.dart';
 import '../register/register_page.dart';
 import '../../../shared/japanese_background.dart';
 
@@ -56,6 +58,12 @@ class _LoginPageState extends State<LoginPage> {
         email: _emailController.text,
         password: _passwordController.text,
       );
+      NotebookService.instance.switchUser(
+        email: result.email,
+        userId: result.userId,
+        isGuest: false,
+      );
+      SearchHistoryService.instance.switchUser(result.email);
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
@@ -162,6 +170,13 @@ class _LoginPageState extends State<LoginPage> {
             fullName: fullName,
           );
         }
+
+        NotebookService.instance.switchUser(
+          email: email,
+          userId: null,
+          isGuest: false,
+        );
+        SearchHistoryService.instance.switchUser(email);
 
         if (!mounted) return;
         Navigator.pushReplacement(
@@ -276,7 +291,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 68),
                     Padding(
-                      padding: const EdgeInsets.only(top: 68, bottom: 24),
+                      padding: const EdgeInsets.only(top: 24, bottom: 24),
                       child: Wrap(
                         alignment: WrapAlignment.center,
                         crossAxisAlignment: WrapCrossAlignment.center,

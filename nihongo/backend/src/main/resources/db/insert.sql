@@ -226,14 +226,14 @@ COMMIT;
 -- =============================================================================
 
 INSERT INTO study_topics (topic_code, title, category, item_count_text) VALUES
-('tu_vung_n4', 'Từ vựng N4', 'JLPT', '523 từ'),
-('ngu_phap_n4', 'Ngữ pháp N4', 'JLPT', '436 từ'),
-('han_tu_n4', 'Hán tự N4', 'JLPT', '167 từ'),
-('tu_vung_n5', 'Từ vựng N5', 'JLPT', '571 từ'),
+('tu_vung_n4', 'Từ vựng N4', 'JLPT', '20 từ'),
+('ngu_phap_n4', 'Ngữ pháp N4', 'JLPT', '16 mục'),
+('han_tu_n4', 'Hán tự N4', 'JLPT', '5 chữ'),
+('tu_vung_n5', 'Từ vựng N5', 'JLPT', '3 từ'),
 ('xe_co', 'Xe cộ', 'CHUYEN_NGANH', '4 mục'),
 ('vat_lieu_dien_nuoc', 'Vật liệu điện và nước', 'CHUYEN_NGANH', '6 mục'),
-('tho_co_khi', 'Thợ cơ khí', 'CHUYEN_NGANH', '7 mục'),
-('loi_song', 'Lối sống', 'CHUYEN_NGANH', '12 mục'),
+('tho_co_khi', 'Thợ cơ khí', 'CHUYEN_NGANH', '5 mục'),
+('loi_song', 'Lối sống', 'CHUYEN_NGANH', '4 mục'),
 ('it_cntt', 'Công nghệ thông tin', 'CHUYEN_NGANH', '6 mục'),
 ('xay_dung', 'Xây dựng', 'CHUYEN_NGANH', '4 mục'),
 ('dieu_duong', 'Điều dưỡng & Y tế', 'CHUYEN_NGANH', '4 mục'),
@@ -242,8 +242,8 @@ INSERT INTO study_topics (topic_code, title, category, item_count_text) VALUES
 ('che_bien_thuc_pham', 'Chế biến thực phẩm', 'CHUYEN_NGANH', '3 mục'),
 ('may_mac', 'May mặc', 'CHUYEN_NGANH', '3 mục'),
 ('kinh_doanh', 'Kinh doanh & Thương mại', 'CHUYEN_NGANH', '3 mục'),
-('giao_tiep_hang_ngay', 'Giao tiếp hàng ngày', 'KHAC', '15 mục'),
-('du_lich_am_thuc', 'Du lịch & Ẩm thực', 'KHAC', '8 mục')
+('giao_tiep_hang_ngay', 'Giao tiếp hàng ngày', 'KHAC', '5 mục'),
+('du_lich_am_thuc', 'Du lịch & Ẩm thực', 'KHAC', '4 mục')
 ON DUPLICATE KEY UPDATE 
     title=VALUES(title),
     category=VALUES(category),

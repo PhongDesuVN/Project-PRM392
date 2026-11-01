@@ -38,33 +38,36 @@ class NotebookWordsListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final words = status != null
-        ? NotebookService.instance.getWordsByStatus(status!)
-        : NotebookService.instance.getAllReviewWords(notebookId: notebookId);
+    return AnimatedBuilder(
+      animation: NotebookService.instance,
+      builder: (context, _) {
+        final words = status != null
+            ? NotebookService.instance.getWordsByStatus(status!)
+            : NotebookService.instance.getAllReviewWords(notebookId: notebookId);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF1F3F6),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF1F3F6),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF1E242B),
-            size: 20,
+        return Scaffold(
+          backgroundColor: const Color(0xFFF1F3F6),
+          appBar: AppBar(
+            backgroundColor: const Color(0xFFF1F3F6),
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Color(0xFF1E242B),
+                size: 20,
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              '$statusTitle (${words.length} từ)',
+              style: const TextStyle(
+                color: Color(0xFF1E242B),
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          '$statusTitle (${words.length} từ)',
-          style: const TextStyle(
-            color: Color(0xFF1E242B),
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-      body: words.isEmpty
+          body: words.isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -146,14 +149,19 @@ class NotebookWordsListPage extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                Text(
-                                  '【${word.reading}】',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Color(0xFF6B7280),
-                                    fontWeight: FontWeight.w500,
+                                if (word.reading.isNotEmpty)
+                                  Expanded(
+                                    child: Text(
+                                      '【${word.reading}】',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Color(0xFF6B7280),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
                                   ),
-                                ),
                               ],
                             ),
                             if (word.romaji != null && word.romaji!.isNotEmpty)
@@ -240,6 +248,8 @@ class NotebookWordsListPage extends StatelessWidget {
                 ),
               ),
             ),
+        );
+      },
     );
   }
 }

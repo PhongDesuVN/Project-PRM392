@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/ui.dart';
+import '../../../auth/login/login_page.dart';
 import '../../../learn/topic_words/flashcard_page.dart';
 import 'models/notebook_item.dart';
+import 'notebook_detail_page.dart';
 import 'notebook_words_list_page.dart';
 import 'services/notebook_service.dart';
 import 'widgets/notebook_list_section.dart';
@@ -28,8 +30,6 @@ class MyNotebookView extends StatefulWidget {
 }
 
 class _MyNotebookViewState extends State<MyNotebookView> {
-  bool _isSpacedRepetition = false;
-
   @override
   void initState() {
     super.initState();
@@ -42,6 +42,10 @@ class _MyNotebookViewState extends State<MyNotebookView> {
     String title,
     Color color,
   ) {
+    if (NotebookService.instance.isGuest) {
+      _showGuestLoginDialog(context, 'xem chi tiết trạng thái từ');
+      return;
+    }
     widget.onStatTap?.call(title);
     Navigator.push(
       context,
@@ -55,20 +59,72 @@ class _MyNotebookViewState extends State<MyNotebookView> {
     );
   }
 
-  void _openNotebookWords(NotebookItem item) {
-    Navigator.push(
-      context,
-      MaterialPageRoute<void>(
-        builder: (_) => NotebookWordsListPage(
-          notebookId: item.id,
-          statusTitle: item.title,
-          themeColor: AppColors.blue,
+  void _showGuestLoginDialog(BuildContext context, String action) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: const [
+            Icon(Icons.lock_outline_rounded, color: AppColors.blue),
+            SizedBox(width: 8),
+            Text(
+              'Yêu cầu đăng nhập',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ],
         ),
+        content: Text(
+          'Bạn cần đăng nhập tài khoản để $action và lưu trữ dữ liệu cá nhân.',
+          style: const TextStyle(fontSize: 14.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Để sau', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.blue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.push(
+                context,
+                MaterialPageRoute<void>(builder: (_) => const LoginPage()),
+              );
+            },
+            child: const Text('Đăng nhập', style: TextStyle(color: Colors.white)),
+          ),
+        ],
       ),
     );
   }
 
+  void _openNotebookWords(NotebookItem item) async {
+    if (NotebookService.instance.isGuest) {
+      _showGuestLoginDialog(context, 'mở Sổ tay cá nhân');
+      return;
+    }
+    await Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => NotebookDetailPage(
+          notebook: item,
+        ),
+      ),
+    );
+    NotebookService.instance.refreshAll();
+  }
+
   void _startReviewNotebook(BuildContext context, {NotebookItem? targetNotebook}) {
+    if (NotebookService.instance.isGuest) {
+      _showGuestLoginDialog(context, 'Ôn tập sổ tay cá nhân');
+      return;
+    }
     if (widget.onReviewNotebook != null && targetNotebook == null) {
       widget.onReviewNotebook!();
       return;
@@ -115,21 +171,8 @@ class _MyNotebookViewState extends State<MyNotebookView> {
       animation: NotebookService.instance,
       builder: (context, _) {
         final service = NotebookService.instance;
+        final isGuest = service.isGuest;
         final stats = service.stats;
-        final selected = service.selectedNotebook;
-
-        // Số từ hiển thị trên nút "Ôn tập sổ tay (X từ)"
-        final reviewCount = selected != null
-            ? selected.wordCount
-            : service.totalReviewWordsCount;
-
-        final buttonLabel = selected != null
-            ? (reviewCount > 0
-                ? 'Ôn tập "${selected.title}" ($reviewCount từ)'
-                : 'Ôn tập "${selected.title}"')
-            : (reviewCount > 0
-                ? 'Ôn tập sổ tay ($reviewCount từ)'
-                : 'Ôn tập sổ tay');
 
         return ListView(
           physics: const BouncingScrollPhysics(),
@@ -146,15 +189,15 @@ class _MyNotebookViewState extends State<MyNotebookView> {
             ),
             const SizedBox(height: 14),
 
-            // Lưới 4 thẻ trạng thái học tập (2x2) giống ảnh chụp
+            // 3 thẻ trạng thái học tập (Chưa thuộc, Thuộc lơ mơ, Thuộc làu làu)
             Row(
               children: [
                 Expanded(
                   child: OverviewStatCard(
                     title: 'Chưa thuộc',
                     indicatorColor: const Color(0xFFE53935),
-                    count: stats.chuaThuoc,
-                    unit: 'câu',
+                    count: isGuest ? null : stats.chuaThuoc,
+                    unit: 'từ',
                     onTap: () => _openWordsList(
                       context,
                       NotebookWordStatus.chuaThuoc,
@@ -163,12 +206,12 @@ class _MyNotebookViewState extends State<MyNotebookView> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Expanded(
                   child: OverviewStatCard(
                     title: 'Thuộc lơ mơ',
                     indicatorColor: const Color(0xFFFFB300),
-                    count: stats.thuocLoMo,
+                    count: isGuest ? null : stats.thuocLoMo,
                     unit: 'từ',
                     onTap: () => _openWordsList(
                       context,
@@ -178,31 +221,12 @@ class _MyNotebookViewState extends State<MyNotebookView> {
                     ),
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: OverviewStatCard(
-                    title: 'Thuộc kha khá',
-                    indicatorColor: const Color(0xFF1E88E5),
-                    count: stats.thuocKhaKha,
-                    unit: 'từ',
-                    onTap: () => _openWordsList(
-                      context,
-                      NotebookWordStatus.thuocKhaKha,
-                      'Thuộc kha khá',
-                      const Color(0xFF1E88E5),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Expanded(
                   child: OverviewStatCard(
                     title: 'Thuộc làu làu',
                     indicatorColor: const Color(0xFF43A047),
-                    count: stats.thuocLauLau,
+                    count: isGuest ? null : stats.thuocLauLau,
                     unit: 'từ',
                     onTap: () => _openWordsList(
                       context,
@@ -214,54 +238,7 @@ class _MyNotebookViewState extends State<MyNotebookView> {
                 ),
               ],
             ),
-            const SizedBox(height: 14),
-
-            // Hàng công tắc "Học lặp lại ngắt quãng"
-            Row(
-              children: [
-                const Text(
-                  'Học lặp lại ngắt quãng',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF2C3E50),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                InkWell(
-                  borderRadius: BorderRadius.circular(12),
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: const Text('Học lặp lại ngắt quãng (SRS)'),
-                        content: const Text(
-                          'Thuật toán ngắt quãng giúp tối ưu hóa thời gian ôn tập từ vựng: từ khó sẽ được nhắc lại nhiều lần hơn, từ đã ghi nhớ sẽ giãn cách thời gian để bạn ghi nhớ dài hạn.',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx),
-                            child: const Text('Đã hiểu'),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                  child: const Icon(
-                    Icons.info_outline_rounded,
-                    size: 18,
-                    color: Color(0xFF8C98A4),
-                  ),
-                ),
-                const Spacer(),
-                Switch.adaptive(
-                  value: _isSpacedRepetition,
-                  activeTrackColor: AppColors.blue,
-                  onChanged: (val) => setState(() => _isSpacedRepetition = val),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
 
             // Nút bấm "Ôn tập sổ tay (X từ)" thể hiện số từ của danh sách sổ tay bên dưới
             SizedBox(
@@ -274,9 +251,9 @@ class _MyNotebookViewState extends State<MyNotebookView> {
                   color: Colors.white,
                   size: 20,
                 ),
-                label: Text(
-                  buttonLabel,
-                  style: const TextStyle(
+                label: const Text(
+                  'Ôn tập sổ tay',
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
