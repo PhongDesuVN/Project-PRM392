@@ -12,8 +12,11 @@ C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\repository\UserRepository.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\dto\search\SearchHistoryDtos.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\service\TopicService.java
+C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\dto\mockexam\MockExamDtos.java
+C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\controller\MockExamController.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\service\SearchHistoryService.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\repository\SearchHistoryRepository.java
+C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\repository\MockExamRepository.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\repository\TopicRepository.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\dto\notebook\NotebookDtos.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\service\AlphabetService.java
@@ -25,5 +28,6 @@ C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\repository\ResetTokenRepository.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\service\AuthService.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\controller\NotebookController.java
+C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\service\MockExamService.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\repository\NotebookRepository.java
 C:\Users\Admin\Desktop\PRM\Project-PRM392\nihongo\backend\src\main\java\com\prm\backend\entity\Entities.java

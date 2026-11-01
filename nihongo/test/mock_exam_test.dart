@@ -98,7 +98,7 @@ class _FakeMockExamService extends MockExamService {
 }
 
 void main() {
-  testWidgets('lists quick tests and JLPT exam for the selected level', (
+  testWidgets('displays top bar categories, levels and filtered exam list', (
     tester,
   ) async {
     final service = _FakeMockExamService();
@@ -108,11 +108,25 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(service.requestedLevels, ['N5']);
-    expect(find.text('Luyện tập nhanh'), findsOneWidget);
-    expect(find.text('Test từ vựng N5 - Đề 1'), findsOneWidget);
-    expect(find.text('Thi thử JLPT theo cấu trúc đề'), findsOneWidget);
-    expect(find.text('Cao nhất 75%'), findsOneWidget);
+    expect(find.text('Thi thử'), findsOneWidget);
+    expect(find.text('Bảng xếp hạng'), findsOneWidget);
+    expect(find.text('Ngữ pháp'), findsOneWidget);
+    expect(find.text('Từ vựng'), findsOneWidget);
+    expect(find.text('JLPT'), findsOneWidget);
+    expect(find.text('Danh sách đề thi'), findsOneWidget);
 
+    // Chuyển sang tab "Từ vựng"
+    await tester.tap(find.text('Từ vựng'));
+    await tester.pumpAndSettle();
+    expect(find.text('Test từ vựng N5 - Đề 1'), findsOneWidget);
+
+    // Chuyển sang tab "JLPT"
+    await tester.tap(find.text('JLPT'));
+    await tester.pumpAndSettle();
+    expect(find.text('Thi thử JLPT N5 - Đề 1'), findsOneWidget);
+    expect(find.text('75%'), findsOneWidget);
+
+    // Đổi sang level N4
     await tester.tap(find.text('N4'));
     await tester.pumpAndSettle();
     expect(service.requestedLevels, ['N5', 'N4']);
@@ -125,6 +139,10 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(home: Scaffold(body: MockExamTab(service: service))),
     );
+    await tester.pumpAndSettle();
+
+    // Chuyển sang tab Từ vựng để mở đề thi
+    await tester.tap(find.text('Từ vựng'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Test từ vựng N5 - Đề 1'));
