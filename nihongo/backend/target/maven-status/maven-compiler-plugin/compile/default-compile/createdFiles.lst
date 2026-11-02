@@ -1,5 +1,6 @@
 com\prm\backend\repository\ResetTokenRepository.class
 com\prm\backend\controller\AuthController.class
+com\prm\backend\controller\NotebookController.class
 com\prm\backend\config\FirebaseConfig.class
 com\prm\backend\dto\notebook\NotebookDtos$UpdateNotebookRequest.class
 com\prm\backend\service\MockExamService.class
@@ -23,6 +24,7 @@ com\prm\backend\repository\MockExamRepository.class
 com\prm\backend\dto\notebook\NotebookDtos$NotebookSyncRequest.class
 com\prm\backend\repository\MockExamRepository$AnswerKey.class
 com\prm\backend\dto\auth\AuthDtos$ForgotPasswordRequest.class
+com\prm\backend\controller\SearchHistoryController.class
 com\prm\backend\dto\alphabet\AlphabetDtos$AlphabetItem.class
 com\prm\backend\entity\Entities$ResetToken.class
 com\prm\backend\exception\GlobalExceptionHandler$BusinessException.class
@@ -57,6 +59,7 @@ com\prm\backend\service\SearchHistoryService.class
 com\prm\backend\dto\dictionary\DictionaryDtos$Meaning.class
 com\prm\backend\dto\notebook\NotebookDtos$NotebookProgressItem.class
 com\prm\backend\repository\NotebookRepository.class
+com\prm\backend\security\UserResolver.class
 com\prm\backend\dto\auth\AuthDtos$LoginRequest.class
 com\prm\backend\dto\mockexam\MockExamDtos$ExamSummary.class
 com\prm\backend\security\SecurityConfig$JwtProvider.class

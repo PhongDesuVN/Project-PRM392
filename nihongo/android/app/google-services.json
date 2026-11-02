@@ -12,7 +12,20 @@
           "package_name": "com.example.nihongo"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "854802733120-l1fi2k8jenfu5j7t76qu3c3oa85dt2r1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.nihongo",
+            "certificate_hash": "5d3227e65a4ff7e3dab6b28b94bfee2c96b95a05"
+          }
+        },
+        {
+          "client_id": "854802733120-pbkno674gofnvsoeov3h1uq6fojt6pt3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDaZh44nqLz7yTBUpjgS44uXKKQJL18XFw"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "854802733120-pbkno674gofnvsoeov3h1uq6fojt6pt3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
