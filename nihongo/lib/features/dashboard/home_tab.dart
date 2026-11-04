@@ -1,4 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+
+import 'banner_data.dart';
 
 import '../../shared/nihon_logo.dart';
 import '../../shared/ui.dart';
@@ -123,8 +126,8 @@ class _HomeTabState extends State<HomeTab> {
     });
 
     if (isCorrect) {
-      // Khi chọn đáp án đúng thì tự động next câu khác sau 600ms
-      Future.delayed(const Duration(milliseconds: 600), () {
+      // Khi chọn đáp án đúng thì tự động chuyển sang câu tiếp theo sau 900ms để người dùng kịp nhìn thấy kết quả
+      Future.delayed(const Duration(milliseconds: 900), () {
         if (!mounted) return;
         if (_currentQuizIndex < _dailyQuizzes.length - 1) {
           setState(() {
@@ -158,7 +161,7 @@ class _HomeTabState extends State<HomeTab> {
           children: [
             // Logo Nihon
             SizedBox(
-              width: 125,
+              width: 140,
               height: 40,
               child: FittedBox(
                 alignment: Alignment.centerLeft,
@@ -205,15 +208,25 @@ class _HomeTabState extends State<HomeTab> {
             IconButton(
               tooltip: 'Hồ sơ',
               onPressed: widget.onOpenProfile,
-              icon: CircleAvatar(
-                radius: 19,
-                backgroundColor: AppColors.blue.withValues(alpha: 0.15),
-                child: Text(
-                  initial,
-                  style: const TextStyle(
-                    color: AppColors.blue,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
+              icon: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.3),
+                    width: 1.5,
+                  ),
+                ),
+                child: CircleAvatar(
+                  radius: 17,
+                  backgroundColor: AppColors.primarySoft,
+                  child: Text(
+                    initial,
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
               ),
@@ -270,13 +283,13 @@ class _HomeTabState extends State<HomeTab> {
         // ===================================================================
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.98),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.border),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
             boxShadow: [
               BoxShadow(
-                color: AppColors.blue.withValues(alpha: 0.08),
-                blurRadius: 16,
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 14,
                 offset: const Offset(0, 4),
               ),
             ],
@@ -319,7 +332,11 @@ class _HomeTabState extends State<HomeTab> {
                   ],
                 ),
               ),
-              const Divider(height: 1, thickness: 0.8),
+              const Divider(
+                height: 1,
+                thickness: 0.8,
+                color: Color(0xFFF1F5F9),
+              ),
               // Hàng công cụ tìm kiếm: Chụp ảnh | Tra bộ thủ | Viết Kanji
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -337,21 +354,7 @@ class _HomeTabState extends State<HomeTab> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Expanded(
-                      child: _SearchToolSquareButton(
-                        customIcon: const Text(
-                          '夂',
-                          style: TextStyle(
-                            fontSize: 19,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.accent,
-                          ),
-                        ),
-                        label: 'Tra bộ thủ',
-                        onTap: widget.onOpenDictionary,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
+
                     Expanded(
                       child: _SearchToolSquareButton(
                         icon: Icons.edit_note_rounded,
@@ -366,6 +369,12 @@ class _HomeTabState extends State<HomeTab> {
             ],
           ),
         ),
+        const SizedBox(height: 14),
+
+        // ===================================================================
+        // BANNER CAROUSEL (3 ảnh ngang thay nhau chuyển tiếp)
+        // ===================================================================
+        const _DashboardBannerCarousel(),
         const SizedBox(height: 14),
 
         // ===================================================================
@@ -434,7 +443,8 @@ class _HomeTabState extends State<HomeTab> {
         ListenableBuilder(
           listenable: SearchHistoryService.instance,
           builder: (context, _) {
-            final keywords = SearchHistoryService.instance.recentKeywords;
+            final keywords =
+                SearchHistoryService.instance.recentKeywords.take(10).toList();
             if (keywords.isEmpty) return const SizedBox.shrink();
 
             return Column(
@@ -647,18 +657,26 @@ class _HomeTabState extends State<HomeTab> {
                   final isCorrect = index == quiz.correctIndex;
 
                   Color bgColor = const Color(0xFFF8FAFC);
-                  Color borderColor = AppColors.border;
+                  Color borderColor = const Color(0xFFE2E8F0);
+                  double borderWidth = 1.0;
                   Color textColor = AppColors.darkText;
 
                   if (_selectedAnswerIndex != null) {
                     if (isCorrect) {
-                      bgColor = AppColors.primarySoft;
-                      borderColor = AppColors.primary;
-                      textColor = AppColors.primary;
+                      // ĐÁP ÁN ĐÚNG: Nổi bật với màu xanh lá
+                      bgColor = const Color(0xFFECFDF5);
+                      borderColor = const Color(0xFF16A34A);
+                      borderWidth = 1.8;
+                      textColor = const Color(0xFF15803D);
                     } else if (isSelected) {
-                      bgColor = AppColors.error.withValues(alpha: 0.1);
-                      borderColor = AppColors.error;
-                      textColor = AppColors.error;
+                      // ĐÁP ÁN SAI ĐÃ CHỌN: Nổi bật với màu đỏ
+                      bgColor = const Color(0xFFFEF2F2);
+                      borderColor = const Color(0xFFDC2626);
+                      borderWidth = 1.8;
+                      textColor = const Color(0xFFB91C1C);
+                    } else {
+                      // Các đáp án khác: làm mờ nhẹ
+                      textColor = const Color(0xFF94A3B8);
                     }
                   }
 
@@ -667,56 +685,107 @@ class _HomeTabState extends State<HomeTab> {
                     borderRadius: BorderRadius.circular(10),
                     child: Container(
                       alignment: Alignment.center,
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: bgColor,
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: borderColor),
-                      ),
-                      child: Text(
-                        optionText,
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: textColor,
+                        border: Border.all(
+                          color: borderColor,
+                          width: borderWidth,
                         ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (_selectedAnswerIndex != null && isCorrect) ...[
+                            const Icon(
+                              Icons.check_circle_rounded,
+                              size: 16,
+                              color: Color(0xFF16A34A),
+                            ),
+                            const SizedBox(width: 4),
+                          ] else if (_selectedAnswerIndex != null &&
+                              isSelected) ...[
+                            const Icon(
+                              Icons.cancel_rounded,
+                              size: 16,
+                              color: Color(0xFFDC2626),
+                            ),
+                            const SizedBox(width: 4),
+                          ],
+                          Flexible(
+                            child: Text(
+                              optionText,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight:
+                                    (_selectedAnswerIndex != null &&
+                                        (isCorrect || isSelected))
+                                    ? FontWeight.w700
+                                    : FontWeight.w600,
+                                color: textColor,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   );
                 },
               ),
               if (_selectedAnswerIndex != null) ...[
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Icon(
-                      _selectedAnswerIndex == quiz.correctIndex
-                          ? Icons.check_circle_rounded
-                          : Icons.cancel_rounded,
-                      size: 16,
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _selectedAnswerIndex == quiz.correctIndex
+                        ? const Color(0xFFECFDF5)
+                        : const Color(0xFFFEF2F2),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
                       color: _selectedAnswerIndex == quiz.correctIndex
-                          ? AppColors.primary
-                          : AppColors.error,
+                          ? const Color(0xFF86EFAC)
+                          : const Color(0xFFFECACA),
                     ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
                         _selectedAnswerIndex == quiz.correctIndex
-                            ? 'Chính xác! Bạn làm rất tốt.'
-                            : 'Chưa đúng. Đáp án: ${quiz.options[quiz.correctIndex]}',
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w700,
-                          color: _selectedAnswerIndex == quiz.correctIndex
-                              ? AppColors.primary
-                              : AppColors.error,
+                            ? Icons.check_circle_rounded
+                            : Icons.cancel_rounded,
+                        size: 18,
+                        color: _selectedAnswerIndex == quiz.correctIndex
+                            ? const Color(0xFF16A34A)
+                            : const Color(0xFFDC2626),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _selectedAnswerIndex == quiz.correctIndex
+                              ? 'Chính xác! Bạn làm rất tốt.'
+                              : 'Chưa đúng. Đáp án đúng là: ${quiz.options[quiz.correctIndex]}',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                            color: _selectedAnswerIndex == quiz.correctIndex
+                                ? const Color(0xFF15803D)
+                                : const Color(0xFFB91C1C),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ],
@@ -728,15 +797,24 @@ class _HomeTabState extends State<HomeTab> {
         // 6. PHẦN: KHÁM PHÁ NIHONGO / BẮT ĐẦU HỌC
         // ===================================================================
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             gradient: const LinearGradient(
-              colors: [AppColors.primarySoft, Color(0xFFF7FAF9)],
+              colors: [Color(0xFFEFF6FF), Color(0xFFF8FAFC)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            border: Border.all(color: AppColors.blue.withValues(alpha: 0.2)),
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.18),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.04),
+                blurRadius: 14,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -756,23 +834,23 @@ class _HomeTabState extends State<HomeTab> {
                     const Text(
                       'Bốn việc nên biết để học hiệu quả trong 2 phút',
                       style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.placeholder,
-                        height: 1.3,
+                        fontSize: 12.5,
+                        color: Color(0xFF64748B),
+                        height: 1.35,
                       ),
                     ),
                     const SizedBox(height: 12),
                     FilledButton(
                       onPressed: widget.onOpenLearning,
                       style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.blue,
+                        backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 8,
+                          horizontal: 16,
+                          vertical: 9,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                       child: const Text(
@@ -788,23 +866,23 @@ class _HomeTabState extends State<HomeTab> {
               ),
               const SizedBox(width: 12),
               Container(
-                width: 72,
-                height: 72,
+                width: 68,
+                height: 68,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.blue.withValues(alpha: 0.15),
+                      color: AppColors.primary.withValues(alpha: 0.12),
                       blurRadius: 10,
-                      offset: const Offset(0, 4),
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
                 child: const Icon(
                   Icons.auto_stories_rounded,
-                  color: AppColors.blue,
-                  size: 36,
+                  color: AppColors.primary,
+                  size: 32,
                 ),
               ),
             ],
@@ -858,14 +936,12 @@ class _HomeTabState extends State<HomeTab> {
 class _SearchToolSquareButton extends StatefulWidget {
   const _SearchToolSquareButton({
     this.icon,
-    this.customIcon,
     this.iconColor,
     required this.label,
     required this.onTap,
   });
 
   final IconData? icon;
-  final Widget? customIcon;
   final Color? iconColor;
   final String label;
   final VoidCallback onTap;
@@ -912,9 +988,7 @@ class _SearchToolSquareButtonState extends State<_SearchToolSquareButton> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (widget.customIcon != null)
-                  widget.customIcon!
-                else if (widget.icon != null)
+                if (widget.icon != null)
                   Icon(
                     widget.icon,
                     size: 21,
@@ -1005,6 +1079,130 @@ class _QuickPillButtonState extends State<_QuickPillButton> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Banner quảng bá nằm ngang trên Dashboard (3 ảnh tự động chuyển tiếp mượt mà)
+class _DashboardBannerCarousel extends StatefulWidget {
+  const _DashboardBannerCarousel();
+
+  @override
+  State<_DashboardBannerCarousel> createState() =>
+      _DashboardBannerCarouselState();
+}
+
+class _DashboardBannerCarouselState extends State<_DashboardBannerCarousel> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+  Timer? _autoPlayTimer;
+
+  static const List<String> _banners = [
+    'assets/banners/banner_1.jpg',
+    'assets/banners/banner_2.jpg',
+    'assets/banners/banner_3.jpg',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _startAutoPlay();
+  }
+
+  void _startAutoPlay() {
+    _autoPlayTimer?.cancel();
+    _autoPlayTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (!mounted || !_pageController.hasClients) return;
+      final nextPage = (_currentPage + 1) % _banners.length;
+      _pageController.animateToPage(
+        nextPage,
+        duration: const Duration(milliseconds: 550),
+        curve: Curves.easeInOutCubic,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _autoPlayTimer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: AspectRatio(
+              aspectRatio: 1000 / 333,
+              child: Stack(
+                children: [
+                  PageView.builder(
+                    controller: _pageController,
+                    onPageChanged: (index) {
+                      setState(() => _currentPage = index);
+                    },
+                    itemCount: _banners.length,
+                    itemBuilder: (context, index) {
+                      return Image.asset(
+                        _banners[index],
+                        fit: BoxFit.cover,
+                        errorBuilder: (ctx, err, stack) => Image.memory(
+                          BannerData.all[index],
+                          fit: BoxFit.cover,
+                        ),
+                      );
+                    },
+                  ),
+                  // Dots indicator
+                  Positioned(
+                    bottom: 8,
+                    left: 0,
+                    right: 0,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(_banners.length, (index) {
+                        final isSelected = _currentPage == index;
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                          width: isSelected ? 18 : 6,
+                          height: 5,
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? Colors.white
+                                : Colors.white.withValues(alpha: 0.45),
+                            borderRadius: BorderRadius.circular(4),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 2,
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

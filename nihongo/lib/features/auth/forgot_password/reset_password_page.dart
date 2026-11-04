@@ -1,14 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import '../../../core/api.dart';
+import '../../../shared/japanese_background.dart';
 import '../../../shared/ui.dart';
 import '../auth_service.dart';
 
-/// Nhap ma dat lai mat khau va mat khau moi.
-///
-/// Khi backend bat `app.password-reset.expose-token`, token duoc dien san
-/// qua [prefilledToken] de tien test tren emulator. O moi truong that
-/// nguoi dung se nhan token qua email va tu nhap vao.
+/// Nhập mã đặt lại mật khẩu và mật khẩu mới.
 class ResetPasswordPage extends StatefulWidget {
   const ResetPasswordPage({
     super.key,
@@ -27,6 +24,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _tokenController;
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   final _authService = AuthService();
   bool _isLoading = false;
 
@@ -40,13 +38,15 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   void dispose() {
     _tokenController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     _authService.dispose();
     super.dispose();
   }
 
   void _showMessage(String message) {
     ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _submit() async {
@@ -59,7 +59,6 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         newPassword: _passwordController.text,
       );
       if (!mounted) return;
-      // Lay messenger truoc khi pop vi context cua page se khong con hop le.
       final messenger = ScaffoldMessenger.of(context);
       Navigator.pop(context);
       messenger.showSnackBar(
@@ -79,112 +78,183 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.canvas,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-          child: Column(
-            children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: IconButton(
-                  tooltip: 'Quay lại',
-                  onPressed: () => Navigator.maybePop(context),
-                  icon: const Icon(
-                    Icons.arrow_back_ios_new,
-                    color: AppColors.muted,
-                    size: 22,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Đặt lại mật khẩu',
-                style: TextStyle(
-                  color: AppColors.ink,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                widget.email,
-                style: const TextStyle(color: AppColors.muted, fontSize: 14),
-              ),
-              const SizedBox(height: 40),
-              Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    AuthTextField(
-                      hintText: 'Mã đặt lại mật khẩu',
-                      prefixIcon: Icons.vpn_key_outlined,
-                      controller: _tokenController,
-                      textInputAction: TextInputAction.next,
-                      validator: (value) =>
-                          value == null || value.trim().isEmpty
-                          ? 'Vui lòng nhập mã đặt lại'
-                          : null,
-                    ),
-                    const SizedBox(height: 16),
-                    AuthTextField(
-                      hintText: 'Mật khẩu mới',
-                      prefixIcon: Icons.lock_outline,
-                      isPassword: true,
-                      controller: _passwordController,
-                      textInputAction: TextInputAction.next,
-                      validator: (value) => value == null || value.length < 6
-                          ? 'Mật khẩu cần ít nhất 6 ký tự'
-                          : null,
-                    ),
-                    const SizedBox(height: 16),
-                    AuthTextField(
-                      hintText: 'Nhập lại mật khẩu mới',
-                      prefixIcon: Icons.lock_outline,
-                      isPassword: true,
-                      textInputAction: TextInputAction.done,
-                      validator: (value) => value != _passwordController.text
-                          ? 'Mật khẩu nhập lại chưa khớp'
-                          : null,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: FilledButton(
-                  onPressed: _isLoading ? null : _submit,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.blue,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
+      body: JapaneseBackground(
+        petalCount: 6,
+        showSun: false,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Nút quay lại tròn thanh lịch
+                InkWell(
+                  onTap: () => Navigator.maybePop(context),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      size: 18,
+                      color: Color(0xFF1E293B),
                     ),
                   ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text(
-                          'Xác nhận',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
                 ),
-              ),
-              const SizedBox(height: 40),
-            ],
+
+                const SizedBox(height: 28),
+
+                const Text(
+                  'Đặt lại mật khẩu',
+                  style: TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.alternate_email_rounded,
+                        size: 15,
+                        color: Color(0xFF64748B),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        widget.email,
+                        style: const TextStyle(
+                          color: Color(0xFF475569),
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 28),
+
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      AuthTextField(
+                        labelText: 'Mã xác nhận',
+                        hintText: 'Nhập mã token đặt lại mật khẩu',
+                        prefixIcon: Icons.vpn_key_outlined,
+                        controller: _tokenController,
+                        textInputAction: TextInputAction.next,
+                        validator: (value) =>
+                            value == null || value.trim().isEmpty
+                                ? 'Vui lòng nhập mã đặt lại'
+                                : null,
+                      ),
+                      const SizedBox(height: 16),
+                      AuthTextField(
+                        labelText: 'Mật khẩu mới',
+                        hintText: 'Tối thiểu 6 ký tự',
+                        prefixIcon: Icons.lock_outline_rounded,
+                        isPassword: true,
+                        controller: _passwordController,
+                        textInputAction: TextInputAction.next,
+                        validator: (value) => value == null || value.length < 6
+                            ? 'Mật khẩu cần ít nhất 6 ký tự'
+                            : null,
+                      ),
+                      const SizedBox(height: 16),
+                      AuthTextField(
+                        labelText: 'Xác nhận mật khẩu mới',
+                        hintText: 'Nhập lại mật khẩu mới',
+                        prefixIcon: Icons.lock_reset_rounded,
+                        isPassword: true,
+                        controller: _confirmPasswordController,
+                        textInputAction: TextInputAction.done,
+                        validator: (value) => value != _passwordController.text
+                            ? 'Mật khẩu nhập lại chưa khớp'
+                            : null,
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 28),
+
+                // Nút Xác nhận chính
+                Container(
+                  width: double.infinity,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF2563EB).withValues(alpha: 0.25),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: _isLoading ? null : _submit,
+                      borderRadius: BorderRadius.circular(14),
+                      child: Center(
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                'Xác nhận đổi mật khẩu',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 }
+

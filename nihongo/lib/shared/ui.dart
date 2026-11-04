@@ -1,24 +1,44 @@
 import 'package:flutter/material.dart';
 
-/// Mau va theme dung chung.
+/// Màu sắc và Theme chuẩn hiện đại cho Nihongo.
+/// Tông màu chủ đạo: Xanh Lam Nhật Bản (Japanese Indigo / Aiiro 藍色)
+/// Thanh lịch, êm dịu cho mắt, tạo cảm giác tập trung và thư thái khi học tập.
 class AppColors {
-  static const canvas = Color(0xFFFAF6F1);
-  static const surface = Color(0xFFFFFDFB);
-  static const primary = Color(0xFFB93B32);
-  static const primarySoft = Color(0xFFF7E6E1);
-  static const accent = Color(0xFF607A5B);
-  static const gold = Color(0xFFC19243);
-  static const ink = Color(0xFF2D2926);
-  static const muted = Color(0xFF746B66);
-  static const border = Color(0xFFE8DCD4);
+  // Nền sáng, sạch, hiện đại
+  static const canvas = Color(0xFFF8FAFC);
+  static const surface = Color(0xFFFFFFFF);
+
+  // Màu thương hiệu chính: Xanh Lam Nhật Bản (Japanese Indigo) - êm dịu, hài hòa
+  static const primary = Color(0xFF2563EB);
+  static const primarySoft = Color(0xFFEFF6FF);
+  static const primaryHover = Color(0xFF1D4ED8);
+
+  // Màu phụ trợ: Xanh ngọc bích (Jade / Teal) & Vàng mật ong
+  static const accent = Color(0xFF0D9488);
+  static const accentSoft = Color(0xFFF0FDFA);
+  static const gold = Color(0xFFD97706);
+  static const goldSoft = Color(0xFFFEF3C7);
+
+  // Hệ chữ độ tương phản cao, hiện đại
+  static const ink = Color(0xFF0F172A);
+  static const darkText = Color(0xFF1E293B);
+  static const muted = Color(0xFF64748B);
+  static const placeholder = Color(0xFF94A3B8);
+
+  // Đường viền tinh tế
+  static const border = Color(0xFFE2E8F0);
+  static const borderLight = Color(0xFFF1F5F9);
+
+  // Trạng thái hệ thống: Đúng & Sai tách biệt rõ ràng
+  static const error = Color(0xFFDC2626);
+  static const errorSoft = Color(0xFFFEF2F2);
+  static const success = Color(0xFF16A34A);
+  static const successSoft = Color(0xFFECFDF5);
 
   // Compatibility aliases for existing feature widgets.
   static const blue = primary;
-  static const darkText = ink;
-  static const placeholder = Color(0xFF9A918B);
-  static const googleBackground = Color(0xFFFFFEFA);
-  static const googleRed = Color(0xFFB44136);
-  static const error = Color(0xFFB42318);
+  static const googleBackground = Color(0xFFFFFFFF);
+  static const googleRed = Color(0xFF1E293B);
 }
 
 class AppTheme {
@@ -37,47 +57,55 @@ class AppTheme {
       fontFamily: 'Roboto',
       textTheme: const TextTheme(
         headlineLarge: TextStyle(
-          fontFamily: 'serif',
           color: AppColors.ink,
-          fontSize: 30,
+          fontSize: 28,
           fontWeight: FontWeight.w800,
-          height: 1.15,
-        ),
-        headlineMedium: TextStyle(
-          fontFamily: 'serif',
-          color: AppColors.ink,
-          fontSize: 24,
-          fontWeight: FontWeight.w800,
+          letterSpacing: -0.5,
           height: 1.2,
         ),
-        titleLarge: TextStyle(
-          fontFamily: 'serif',
+        headlineMedium: TextStyle(
           color: AppColors.ink,
-          fontSize: 20,
+          fontSize: 22,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.4,
+          height: 1.25,
+        ),
+        titleLarge: TextStyle(
+          color: AppColors.ink,
+          fontSize: 19,
           fontWeight: FontWeight.w700,
+          letterSpacing: -0.2,
         ),
         titleMedium: TextStyle(
-          color: AppColors.ink,
+          color: AppColors.darkText,
           fontSize: 16,
           fontWeight: FontWeight.w700,
         ),
-        bodyLarge: TextStyle(color: AppColors.ink, fontSize: 16, height: 1.45),
+        bodyLarge: TextStyle(
+          color: AppColors.darkText,
+          fontSize: 15,
+          height: 1.5,
+        ),
         bodyMedium: TextStyle(
           color: AppColors.muted,
-          fontSize: 14,
-          height: 1.4,
+          fontSize: 13.5,
+          height: 1.45,
         ),
-        labelLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+        labelLarge: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.1,
+        ),
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Colors.white,
         foregroundColor: AppColors.ink,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
           color: AppColors.ink,
-          fontSize: 20,
+          fontSize: 18,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -86,96 +114,120 @@ class AppTheme {
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           side: const BorderSide(color: AppColors.border),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surface,
+        fillColor: const Color(0xFFF8FAFC),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
-          vertical: 15,
+          vertical: 14,
         ),
-        hintStyle: const TextStyle(color: AppColors.placeholder),
+        hintStyle: const TextStyle(
+          color: AppColors.placeholder,
+          fontSize: 14.5,
+          fontWeight: FontWeight.w400,
+        ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: AppColors.border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.6),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.error, width: 1.2),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           animationDuration: const Duration(milliseconds: 160),
-          minimumSize: const Size(48, 50),
+          minimumSize: const Size(48, 52),
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
-          overlayColor: AppColors.gold.withValues(alpha: 0.18),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
           ),
-          elevation: 1.5,
-          shadowColor: AppColors.primary.withValues(alpha: 0.24),
-          textStyle: const TextStyle(fontWeight: FontWeight.w700),
+          elevation: 0,
+          textStyle: const TextStyle(
+            fontSize: 15.5,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.2,
+          ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           animationDuration: const Duration(milliseconds: 160),
-          minimumSize: const Size(48, 48),
-          foregroundColor: AppColors.ink,
-          overlayColor: AppColors.accent.withValues(alpha: 0.08),
+          minimumSize: const Size(48, 50),
+          foregroundColor: AppColors.darkText,
           side: const BorderSide(color: AppColors.border),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          textStyle: const TextStyle(
+            fontSize: 14.5,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
       dialogTheme: DialogThemeData(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         titleTextStyle: const TextStyle(
           color: AppColors.ink,
-          fontSize: 20,
+          fontSize: 19,
           fontWeight: FontWeight.w700,
         ),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
         showDragHandle: true,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+        ),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppColors.ink,
-        contentTextStyle: const TextStyle(color: Colors.white, fontSize: 14),
+        contentTextStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: AppColors.surface,
+        backgroundColor: const Color(0xFFF8FAFC),
         selectedColor: AppColors.primarySoft,
         side: const BorderSide(color: AppColors.border),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        labelStyle: const TextStyle(color: AppColors.ink),
+        labelStyle: const TextStyle(
+          color: AppColors.darkText,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Colors.white,
         indicatorColor: AppColors.primarySoft,
         elevation: 0,
-        height: 68,
+        height: 66,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
           return TextStyle(
             color: selected ? AppColors.primary : AppColors.muted,
-            fontSize: 11,
+            fontSize: 11.5,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
           );
         }),
@@ -192,13 +244,14 @@ class AppTheme {
   }
 }
 
-/// O input dung chung cho cac form auth: icon ben trai, toggle an/hien
-/// mat khau, va dong text loi rieng ben duoi khung.
+/// Ô nhập input chuẩn hiện đại: animation focus mượt mà, icon tinh tế,
+/// viền cong 14px và hiển thị lỗi chuyên nghiệp.
 class AuthTextField extends StatefulWidget {
   const AuthTextField({
     super.key,
     required this.hintText,
     required this.prefixIcon,
+    this.labelText,
     this.isPassword = false,
     this.controller,
     this.keyboardType,
@@ -207,6 +260,7 @@ class AuthTextField extends StatefulWidget {
   });
 
   final String hintText;
+  final String? labelText;
   final IconData prefixIcon;
   final bool isPassword;
   final TextEditingController? controller;
@@ -220,10 +274,9 @@ class AuthTextField extends StatefulWidget {
 
 class _AuthTextFieldState extends State<AuthTextField> {
   bool _obscureText = true;
+  bool _isFocused = false;
   String? _errorText;
 
-  /// TextFormField ben trong an errorStyle de giu khung cao 56px, nen loi
-  /// duoc bat o day va ve lai thanh dong text rieng ben duoi.
   String? _runValidator(String? value) {
     final error = widget.validator?.call(value);
     if (error != _errorText) {
@@ -241,72 +294,113 @@ class _AuthTextFieldState extends State<AuthTextField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          height: 56,
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: hasError ? AppColors.error : AppColors.border,
-              width: 1.2,
+        if (widget.labelText != null) ...[
+          Text(
+            widget.labelText!,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF334155),
             ),
-            borderRadius: BorderRadius.circular(12),
           ),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 48,
-                child: Icon(
-                  widget.prefixIcon,
-                  color: hasError ? AppColors.error : AppColors.border,
-                  size: 22,
-                ),
+          const SizedBox(height: 6),
+        ],
+        Focus(
+          onFocusChange: (focus) => setState(() => _isFocused = focus),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            height: 52,
+            decoration: BoxDecoration(
+              color: _isFocused ? Colors.white : const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: hasError
+                    ? AppColors.error
+                    : (_isFocused ? AppColors.primary : const Color(0xFFE2E8F0)),
+                width: (_isFocused || hasError) ? 1.6 : 1.0,
               ),
-              Container(width: 1, height: 34, color: AppColors.border),
-              Expanded(
-                child: TextFormField(
-                  controller: widget.controller,
-                  keyboardType: widget.keyboardType,
-                  obscureText: widget.isPassword && _obscureText,
-                  validator: widget.validator == null ? null : _runValidator,
-                  textInputAction: widget.textInputAction,
-                  autocorrect: false,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: AppColors.darkText,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: widget.hintText,
-                    hintStyle: const TextStyle(color: AppColors.placeholder),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                    border: InputBorder.none,
-                    errorStyle: const TextStyle(height: 0, fontSize: 0),
-                    suffixIcon: widget.isPassword
-                        ? IconButton(
-                            tooltip: _obscureText
-                                ? 'Hiện mật khẩu'
-                                : 'Ẩn mật khẩu',
-                            onPressed: () =>
-                                setState(() => _obscureText = !_obscureText),
-                            icon: Icon(
-                              _obscureText
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off_outlined,
-                              color: AppColors.placeholder,
-                              size: 21,
-                            ),
-                          )
-                        : null,
+              boxShadow: _isFocused
+                  ? [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 14, right: 10),
+                  child: Icon(
+                    widget.prefixIcon,
+                    color: hasError
+                        ? AppColors.error
+                        : (_isFocused ? AppColors.primary : const Color(0xFF94A3B8)),
+                    size: 21,
                   ),
                 ),
-              ),
-            ],
+                Expanded(
+                  child: TextFormField(
+                    controller: widget.controller,
+                    keyboardType: widget.keyboardType,
+                    obscureText: widget.isPassword && _obscureText,
+                    validator: widget.validator == null ? null : _runValidator,
+                    textInputAction: widget.textInputAction,
+                    autocorrect: false,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.darkText,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: widget.hintText,
+                      hintStyle: const TextStyle(
+                        color: Color(0xFF94A3B8),
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      contentPadding: const EdgeInsets.only(right: 12),
+                      border: InputBorder.none,
+                      errorStyle: const TextStyle(height: 0, fontSize: 0),
+                      suffixIcon: widget.isPassword
+                          ? IconButton(
+                              tooltip: _obscureText ? 'Hiện mật khẩu' : 'Ẩn mật khẩu',
+                              onPressed: () =>
+                                  setState(() => _obscureText = !_obscureText),
+                              icon: Icon(
+                                _obscureText
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                                color: const Color(0xFF94A3B8),
+                                size: 20,
+                              ),
+                            )
+                          : null,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         if (hasError)
           Padding(
             padding: const EdgeInsets.only(left: 4, top: 6),
-            child: Text(
-              _errorText!,
-              style: const TextStyle(color: AppColors.error, fontSize: 13),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.error_outline_rounded,
+                  size: 14,
+                  color: AppColors.error,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  _errorText!,
+                  style: const TextStyle(color: AppColors.error, fontSize: 12.5),
+                ),
+              ],
             ),
           ),
       ],
@@ -314,6 +408,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
   }
 }
 
+/// Nút đăng nhập Google phong cách hiện đại với chuẩn logo 4 màu Google
 class GoogleSignInButton extends StatelessWidget {
   const GoogleSignInButton({super.key, required this.onPressed});
 
@@ -321,42 +416,108 @@ class GoogleSignInButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
       width: double.infinity,
-      height: 56,
-      child: TextButton(
-        onPressed: onPressed,
-        style: TextButton.styleFrom(
-          backgroundColor: AppColors.googleBackground,
-          foregroundColor: AppColors.googleRed,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(color: AppColors.border),
+      height: 52,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Text(
-              'G',
-              style: TextStyle(
-                fontSize: 25,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF4285F4),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(14),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CustomPaint(
+                  painter: _GoogleIconPainter(),
+                ),
               ),
-            ),
-            SizedBox(width: 12),
-            Text(
-              'Đăng nhập với Google',
-              style: TextStyle(
-                color: AppColors.googleRed,
-                fontSize: 19,
-                fontWeight: FontWeight.w400,
+              const SizedBox(width: 12),
+              const Text(
+                'Tiếp tục với Google',
+                style: TextStyle(
+                  color: Color(0xFF1E293B),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.2,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+class _GoogleIconPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final center = Offset(w / 2, h / 2);
+    final radius = w / 2;
+    final strokeWidth = w * 0.22;
+
+    final redPaint = Paint()
+      ..color = const Color(0xFFEA4335)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth;
+
+    final yellowPaint = Paint()
+      ..color = const Color(0xFFFBBC05)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth;
+
+    final greenPaint = Paint()
+      ..color = const Color(0xFF34A853)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth;
+
+    final bluePaint = Paint()
+      ..color = const Color(0xFF4285F4)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth;
+
+    final rect = Rect.fromCircle(
+      center: center,
+      radius: radius - strokeWidth / 2,
+    );
+
+    canvas.drawArc(rect, -0.4, 1.2, false, bluePaint);
+    canvas.drawArc(rect, 0.8, 1.5, false, greenPaint);
+    canvas.drawArc(rect, 2.3, 1.3, false, yellowPaint);
+    canvas.drawArc(rect, 3.6, 1.4, false, redPaint);
+
+    final barPaint = Paint()
+      ..color = const Color(0xFF4285F4)
+      ..style = PaintingStyle.fill;
+    final barRect = Rect.fromLTWH(
+      center.dx,
+      center.dy - strokeWidth / 2,
+      radius - strokeWidth / 2,
+      strokeWidth,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(barRect, const Radius.circular(2)),
+      barPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

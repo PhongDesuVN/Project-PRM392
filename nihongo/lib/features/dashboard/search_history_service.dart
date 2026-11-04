@@ -6,28 +6,21 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../core/api.dart';
 
-/// Dịch vụ quản lý lịch sử tìm kiếm gần đây.
-/// Tự động đồng bộ 2 chiều giữa:
-/// - Cơ sở dữ liệu MySQL thông qua API Spring Boot (`/search-history`)
-/// - Bộ nhớ thiết bị `FlutterSecureStorage` (cache offline an toàn)
-/// Đồng bộ từ 3 nguồn tìm kiếm:
-/// 1. Tra cứu trực tiếp từ điển (DictionaryTab)
-/// 2. Khung tìm kiếm trang chủ "Nhập Tiếng Nhật cần tìm" (HomeTab)
-/// 3. Nhận dạng viết tay "Viết Kanji" (KanjiHandwritingPage)
+/// Dịch vụ quản lý lịch sử tìm kiếm gần đây (giới hạn tối đa 10 tìm kiếm).
 class SearchHistoryService extends ChangeNotifier {
   SearchHistoryService._({ApiClient? apiClient})
-    : _apiClient = apiClient ?? ApiClient() {
+      : _apiClient = apiClient ?? ApiClient() {
     _init();
   }
 
   static final SearchHistoryService instance = SearchHistoryService._();
+  static const int maxRecentKeywords = 10;
 
   final ApiClient _apiClient;
   final _storage = const FlutterSecureStorage();
   String? _currentEmail;
   bool _isGuest = false;
 
-  /// Đảm bảo không gọi thông báo thay đổi trạng thái trong chu kỳ build của Flutter
   @override
   void notifyListeners() {
     final binding = WidgetsBinding.instance;
@@ -63,7 +56,6 @@ class SearchHistoryService extends ChangeNotifier {
 
   List<String> get recentKeywords => List.unmodifiable(_recentKeywords);
 
-  /// Chuyển đổi tài khoản người dùng để tải lịch sử tìm kiếm tương ứng
   void switchUser(String? email) {
     _currentEmail = email;
     _isGuest = email == null || email.isEmpty || email == 'Khách';
@@ -73,9 +65,7 @@ class SearchHistoryService extends ChangeNotifier {
   }
 
   Future<void> _init() async {
-    // 1. Tải nhanh từ Local Storage để hiển thị UI tức thì
     await _loadFromStorage();
-    // 2. Đồng bộ 2 chiều với Database MySQL qua Backend API nếu không phải khách
     if (!_isGuest) {
       await _syncWithBackend();
     }
@@ -90,6 +80,7 @@ class SearchHistoryService extends ChangeNotifier {
           final list = decoded
               .map((e) => e.toString().trim())
               .where((e) => e.isNotEmpty && !_sampleMockKeywords.contains(e))
+              .take(maxRecentKeywords)
               .toList();
           _recentKeywords = list;
           notifyListeners();
@@ -98,9 +89,7 @@ class SearchHistoryService extends ChangeNotifier {
           }
         }
       }
-    } catch (_) {
-      // Bỏ qua lỗi lưu trữ trên môi trường test hoặc thiết bị không hỗ trợ
-    }
+    } catch (_) {}
   }
 
   Future<void> _syncWithBackend() async {
@@ -111,14 +100,13 @@ class SearchHistoryService extends ChangeNotifier {
         final list = rawList
             .map((e) => e.toString().trim())
             .where((e) => e.isNotEmpty && !_sampleMockKeywords.contains(e))
+            .take(maxRecentKeywords)
             .toList();
         _recentKeywords = list;
         notifyListeners();
         _saveToStorage();
       }
-    } catch (_) {
-      // Offline fallback: sử dụng local storage an toàn
-    }
+    } catch (_) {}
   }
 
   Future<void> _saveToStorage() async {
@@ -130,21 +118,19 @@ class SearchHistoryService extends ChangeNotifier {
     } catch (_) {}
   }
 
-  /// Thêm từ khóa vào đầu danh sách lịch sử tìm kiếm và lưu vào Database.
-  /// Nếu từ khóa đã có sẵn thì đưa lên vị trí đầu tiên.
+  /// Thêm từ khóa vào đầu danh sách lịch sử tìm kiếm (giới hạn tối đa 10 mục)
   void addKeyword(String rawQuery) {
     final query = rawQuery.trim();
     if (query.isEmpty) return;
 
     _recentKeywords.remove(query);
     _recentKeywords.insert(0, query);
-    if (_recentKeywords.length > 20) {
+    if (_recentKeywords.length > maxRecentKeywords) {
       _recentKeywords.removeLast();
     }
     notifyListeners();
     _saveToStorage();
 
-    // Đồng bộ lên MySQL Database thông qua Backend API nếu không phải khách
     if (!_isGuest) {
       _apiClient
           .post(ApiConfig.searchHistory, {'query': query})
@@ -152,14 +138,12 @@ class SearchHistoryService extends ChangeNotifier {
     }
   }
 
-  /// Xóa một từ khóa khỏi danh sách tìm kiếm và đồng bộ xóa trên Database.
   void removeKeyword(String rawQuery) {
     final query = rawQuery.trim();
     if (_recentKeywords.remove(query)) {
       notifyListeners();
       _saveToStorage();
 
-      // Đồng bộ xóa trên Database
       if (!_isGuest) {
         _apiClient
             .delete(
@@ -170,7 +154,6 @@ class SearchHistoryService extends ChangeNotifier {
     }
   }
 
-  /// Xóa toàn bộ lịch sử tìm kiếm trên cả App và Database.
   void clear() {
     _recentKeywords.clear();
     notifyListeners();
@@ -183,7 +166,6 @@ class SearchHistoryService extends ChangeNotifier {
     }
   }
 
-  /// Đặt lại danh sách mặc định (phục vụ test).
   void resetToDefault() {
     _recentKeywords = List<String>.from(defaultKeywords);
     notifyListeners();

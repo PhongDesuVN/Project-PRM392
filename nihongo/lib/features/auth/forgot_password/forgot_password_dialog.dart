@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import '../../../core/api.dart';
 import '../../../shared/ui.dart';
@@ -39,7 +39,6 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
       final message = await _authService.forgotPassword(email: email);
       if (!mounted) return;
 
-      // Backend dev mode nhet token vao message dang "[dev] token=xxx".
       final match = RegExp(r'token=(\S+)').firstMatch(message);
       final devToken = match?.group(1);
 
@@ -79,65 +78,138 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
     final canSubmit = _emailController.text.contains('@') && !_isLoading;
 
     return AlertDialog(
-      title: const Text(
-        'Nhập email tài khoản Nihon của bạn',
-        style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700),
-      ),
-      titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 14),
-      contentPadding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-      content: TextField(
-        controller: _emailController,
-        autofocus: true,
-        enabled: !_isLoading,
-        keyboardType: TextInputType.emailAddress,
-        textInputAction: TextInputAction.done,
-        onChanged: (_) => setState(() {}),
-        decoration: InputDecoration(
-          hintText: 'Email',
-          hintStyle: const TextStyle(color: AppColors.placeholder),
-          enabledBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: AppColors.border),
-            borderRadius: BorderRadius.circular(10),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      titlePadding: const EdgeInsets.fromLTRB(22, 22, 22, 8),
+      contentPadding: const EdgeInsets.fromLTRB(22, 8, 22, 16),
+      actionsPadding: const EdgeInsets.fromLTRB(22, 0, 22, 20),
+      title: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: AppColors.primarySoft,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.lock_reset_rounded,
+              color: AppColors.primary,
+              size: 24,
+            ),
           ),
-          focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: AppColors.blue, width: 1.5),
-            borderRadius: BorderRadius.circular(10),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Text(
+              'Quên mật khẩu?',
+              style: TextStyle(
+                fontSize: 19,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF0F172A),
+              ),
+            ),
           ),
-        ),
+        ],
       ),
-      actionsPadding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Nhập địa chỉ email đăng ký để nhận mã xác nhận đặt lại mật khẩu của bạn.',
+            style: TextStyle(
+              color: Color(0xFF64748B),
+              fontSize: 13.5,
+              height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _emailController,
+            autofocus: true,
+            enabled: !_isLoading,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.done,
+            onChanged: (_) => setState(() {}),
+            style: const TextStyle(
+              fontSize: 15,
+              color: AppColors.darkText,
+              fontWeight: FontWeight.w500,
+            ),
+            decoration: InputDecoration(
+              hintText: 'Nhập email của bạn',
+              prefixIcon: const Icon(
+                Icons.mail_outline_rounded,
+                color: Color(0xFF94A3B8),
+                size: 20,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 13,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide:
+                    const BorderSide(color: AppColors.primary, width: 1.6),
+              ),
+            ),
+          ),
+        ],
+      ),
       actions: [
         Row(
           children: [
             Expanded(
               child: SizedBox(
-                height: 48,
-                child: TextButton(
+                height: 46,
+                child: OutlinedButton(
                   onPressed: _isLoading ? null : () => Navigator.pop(context),
-                  style: TextButton.styleFrom(
-                    backgroundColor: const Color(0xFFE8ECEF),
-                    foregroundColor: AppColors.darkText,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF64748B),
+                    side: const BorderSide(color: Color(0xFFE2E8F0)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  child: const Text('Hủy', style: TextStyle(fontSize: 16)),
+                  child: const Text('Hủy', style: TextStyle(fontSize: 14.5)),
                 ),
               ),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: SizedBox(
-                height: 48,
+                height: 46,
                 child: FilledButton(
                   onPressed: canSubmit ? _submit : null,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                   child: _isLoading
                       ? const SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
+                            strokeWidth: 2.2,
                             color: Colors.white,
                           ),
                         )
-                      : const Text('Ok', style: TextStyle(fontSize: 16)),
+                      : const Text(
+                          'Gửi mã',
+                          style: TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                 ),
               ),
             ),
@@ -147,3 +219,4 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
     );
   }
 }
+

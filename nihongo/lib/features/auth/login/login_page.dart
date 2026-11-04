@@ -8,9 +8,9 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../core/api.dart';
-import '../../../shared/ui.dart';
-
+import '../../../shared/japanese_background.dart';
 import '../../../shared/nihon_logo.dart';
+import '../../../shared/ui.dart';
 import '../auth_service.dart';
 import '../forgot_password/forgot_password_dialog.dart';
 import '../../dashboard/dashboard_page.dart';
@@ -45,7 +45,8 @@ class _LoginPageState extends State<LoginPage> {
 
   void _showMessage(String message) {
     ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _submit() async {
@@ -84,16 +85,13 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() => _isLoading = true);
     try {
-      // Đảm bảo xoá session cũ để Google luôn hiển thị popup chọn tài khoản
       try {
         await _googleSignIn.signOut();
         await _auth.signOut();
       } catch (_) {}
 
-      // 1. Mở popup đăng nhập tài khoản Google
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
-        // Người dùng ấn hủy đăng nhập
         if (mounted) setState(() => _isLoading = false);
         return;
       }
@@ -101,7 +99,6 @@ class _LoginPageState extends State<LoginPage> {
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
-      // 2. Lấy Credential xác thực với Firebase
       final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
@@ -111,7 +108,6 @@ class _LoginPageState extends State<LoginPage> {
         credential,
       );
 
-      // 3. Lấy Firebase ID Token để gửi về Spring Boot
       final String? idToken = await userCredential.user?.getIdToken();
 
       if (idToken != null) {
@@ -134,7 +130,6 @@ class _LoginPageState extends State<LoginPage> {
     String idToken,
     User? firebaseUser,
   ) async {
-    // 10.0.2.2 trỏ về localhost nếu chạy trên Android Emulator
     final url = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.googleLogin}');
 
     try {
@@ -214,115 +209,228 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final canPop = Navigator.canPop(context);
+
     return Scaffold(
       backgroundColor: AppColors.canvas,
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) => SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: constraints.maxHeight - 28,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  IconButton(
-                    tooltip: 'Quay lại',
-                    onPressed: () => Navigator.maybePop(context),
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                  ),
-                  const SizedBox(height: 12),
-                  const Center(
-                    child: SizedBox(
-                      width: 148,
-                      height: 48,
-                      child: FittedBox(child: NihonLogo()),
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-                  const Text(
-                    'Đăng nhập',
-                    style: TextStyle(
-                      color: AppColors.ink,
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  const Text(
-                    'Chào mừng bạn quay lại.',
-                    style: TextStyle(color: AppColors.muted, fontSize: 15),
-                  ),
-                  const SizedBox(height: 24),
-                  Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        AuthTextField(
-                          hintText: 'Nhập email của bạn',
-                          prefixIcon: Icons.mail_outline_rounded,
-                          controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          textInputAction: TextInputAction.next,
-                          validator: _validateEmail,
-                        ),
-                        const SizedBox(height: 14),
-                        AuthTextField(
-                          hintText: 'Mật khẩu',
-                          prefixIcon: Icons.lock_outline_rounded,
-                          isPassword: true,
-                          controller: _passwordController,
-                          textInputAction: TextInputAction.done,
-                          validator: (value) => value == null || value.isEmpty
-                              ? 'Vui lòng nhập mật khẩu'
-                              : null,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () => showForgotPasswordDialog(context),
-                      child: const Text('Quên mật khẩu?'),
-                    ),
-                  ),
-                  _PrimaryButton(
-                    label: 'Đăng nhập',
-                    isLoading: _isLoading,
-                    onPressed: _isLoading ? null : _submit,
-                  ),
-                  const SizedBox(height: 14),
-                  GoogleSignInButton(
-                    onPressed: _isLoading ? () {} : _signInWithGoogle,
-                  ),
-                  const SizedBox(height: 28),
-                  Center(
-                    child: Wrap(
-                      alignment: WrapAlignment.center,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        const Text(
-                          'Bạn chưa có tài khoản Nihon?',
-                          style: TextStyle(
-                            color: AppColors.muted,
-                            fontSize: 14,
+      body: JapaneseBackground(
+        petalCount: 6,
+        showSun: false,
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) => SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight - 24,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Nút quay lại hoặc khoảng cách đầu trang
+                    if (canPop)
+                      InkWell(
+                        onTap: () => Navigator.maybePop(context),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.03),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            size: 18,
+                            color: Color(0xFF1E293B),
                           ),
                         ),
-                        TextButton(
-                          onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute<void>(
-                              builder: (_) => const RegisterPage(),
+                      )
+                    else
+                      const SizedBox(height: 12),
+
+                    const SizedBox(height: 16),
+
+                    // Logo thương hiệu ở giữa
+                    const Center(
+                      child: Column(
+                        children: [
+                          NihonLogo(fontSize: 32),
+                          SizedBox(height: 8),
+                          Text(
+                            'Học tiếng Nhật thông minh & toàn diện',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF64748B),
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                          child: const Text('Đăng ký'),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Tiêu đề form
+                    const Text(
+                      'Đăng nhập',
+                      style: TextStyle(
+                        color: Color(0xFF0F172A),
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    const Text(
+                      'Chào mừng bạn trở lại! Tiếp tục hành trình học tiếng Nhật.',
+                      style: TextStyle(
+                        color: Color(0xFF64748B),
+                        fontSize: 14,
+                        height: 1.4,
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Form nhập thông tin
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          AuthTextField(
+                            labelText: 'Email',
+                            hintText: 'Nhập email của bạn',
+                            prefixIcon: Icons.mail_outline_rounded,
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            validator: _validateEmail,
+                          ),
+                          const SizedBox(height: 16),
+                          AuthTextField(
+                            labelText: 'Mật khẩu',
+                            hintText: 'Nhập mật khẩu',
+                            prefixIcon: Icons.lock_outline_rounded,
+                            isPassword: true,
+                            controller: _passwordController,
+                            textInputAction: TextInputAction.done,
+                            validator: (value) => value == null || value.isEmpty
+                                ? 'Vui lòng nhập mật khẩu'
+                                : null,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () => showForgotPasswordDialog(context),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          textStyle: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13.5,
+                          ),
+                        ),
+                        child: const Text('Quên mật khẩu?'),
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    // Nút Đăng nhập chính
+                    _PrimaryButton(
+                      label: 'Đăng nhập',
+                      isLoading: _isLoading,
+                      onPressed: _isLoading ? null : _submit,
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Dòng ngăn cách "hoặc đăng nhập với"
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            height: 1,
+                            color: const Color(0xFFE2E8F0),
+                          ),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 14),
+                          child: Text(
+                            'hoặc đăng nhập bằng',
+                            style: TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Container(
+                            height: 1,
+                            color: const Color(0xFFE2E8F0),
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                ],
+
+                    const SizedBox(height: 20),
+
+                    // Nút Google Sign In
+                    GoogleSignInButton(
+                      onPressed: _isLoading ? () {} : _signInWithGoogle,
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    const SizedBox(height: 28),
+
+                    // Chuyển sang Đăng ký
+                    Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'Bạn chưa có tài khoản? ',
+                            style: TextStyle(
+                              color: Color(0xFF64748B),
+                              fontSize: 14,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute<void>(
+                                builder: (_) => const RegisterPage(),
+                              ),
+                            ),
+                            child: const Text(
+                              'Đăng ký ngay',
+                              style: TextStyle(
+                                color: AppColors.primary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ),
               ),
             ),
           ),
@@ -353,34 +461,55 @@ class _PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
       width: double.infinity,
       height: 52,
-      child: FilledButton(
-        onPressed: onPressed,
-        style: FilledButton.styleFrom(
-          backgroundColor: AppColors.blue,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+      decoration: BoxDecoration(
+        gradient: onPressed == null
+            ? null
+            : const LinearGradient(
+                colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+        color: onPressed == null ? const Color(0xFFCBD5E1) : null,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: onPressed == null
+            ? null
+            : [
+                BoxShadow(
+                  color: const Color(0xFF2563EB).withValues(alpha: 0.25),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: isLoading ? null : onPressed,
+          borderRadius: BorderRadius.circular(14),
+          child: Center(
+            child: isLoading
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: Colors.white,
+                    ),
+                  )
+                : Text(
+                    label,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
           ),
         ),
-        child: isLoading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  color: Colors.white,
-                ),
-              )
-            : Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
       ),
     );
   }

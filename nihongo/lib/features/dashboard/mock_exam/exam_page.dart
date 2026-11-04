@@ -129,7 +129,11 @@ class _ExamPageState extends State<ExamPage> {
       await Navigator.pushReplacement(
         context,
         MaterialPageRoute<void>(
-          builder: (_) => ExamResultPage(exam: exam, result: result),
+          builder: (_) => ExamResultPage(
+            exam: exam,
+            result: result,
+            service: widget.service,
+          ),
         ),
       );
     } on ApiException catch (e) {

@@ -7,7 +7,7 @@ import '../../shared/japanese_background.dart';
 import '../../shared/ui.dart';
 import '../auth/auth_service.dart';
 import '../auth/login/login_page.dart';
-import '../camera_ocr/camera_ocr_page.dart';
+import '../camera_ocr/screens/javis_camera_screen.dart';
 import 'dictionary/kanji_handwriting_page.dart';
 import 'dictionary/dictionary_tab.dart';
 import 'home_tab.dart';
@@ -59,44 +59,85 @@ class _DashboardPageState extends State<DashboardPage> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
-          children: const [
-            Icon(Icons.lock_outline_rounded, color: AppColors.blue),
-            SizedBox(width: 8),
-            Text(
-              'Yêu cầu đăng nhập',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.primarySoft,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.lock_outline_rounded,
+                color: AppColors.primary,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Text(
+                'Yêu cầu đăng nhập',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              ),
             ),
           ],
         ),
         content: Text(
           'Bạn cần đăng nhập tài khoản để sử dụng $featureName và lưu tiến độ học tập cá nhân.',
-          style: const TextStyle(fontSize: 14.5),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Để sau', style: TextStyle(color: Colors.grey)),
+          style: const TextStyle(
+            fontSize: 14.5,
+            color: Color(0xFF64748B),
+            height: 1.45,
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.blue,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF64748B),
+                    side: const BorderSide(color: Color(0xFFE2E8F0)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    minimumSize: const Size(0, 44),
+                  ),
+                  child: const Text('Để sau'),
+                ),
               ),
-            ),
-            onPressed: () {
-              Navigator.pop(ctx);
-              Navigator.push(
-                context,
-                MaterialPageRoute<void>(builder: (_) => const LoginPage()),
-              );
-            },
-            child: const Text(
-              'Đăng nhập',
-              style: TextStyle(color: Colors.white),
-            ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    minimumSize: const Size(0, 44),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (_) => const LoginPage(),
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    'Đăng nhập',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -155,7 +196,7 @@ class _DashboardPageState extends State<DashboardPage> {
     final result = await Navigator.push<CameraOcrResultData>(
       context,
       MaterialPageRoute<CameraOcrResultData>(
-        builder: (_) => const CameraOcrPage(),
+        builder: (_) => const JavisCameraScreen(),
       ),
     );
     if (!mounted || result == null || result.query.trim().isEmpty) return;
@@ -201,6 +242,15 @@ class _DashboardPageState extends State<DashboardPage> {
                 email: widget.email,
                 fullName: widget.fullName,
                 onLogout: _logout,
+                onOpenNotebook: () {
+                  setState(() {
+                    _learnInitialTabIndex = 0;
+                    _currentIndex = _learnTabIndex;
+                  });
+                },
+                onOpenMockExam: () {
+                  _selectTab(_mockExamTabIndex);
+                },
               ),
             ),
           ),
@@ -280,43 +330,68 @@ class _DashboardPageState extends State<DashboardPage> {
         petalCount: 6,
         child: SafeArea(child: _buildTab()),
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          if (index == _learnTabIndex && _currentIndex != _learnTabIndex) {
-            _learnInitialTabIndex = 0;
-          }
-          _selectTab(index);
-        },
-        backgroundColor: AppColors.surface,
-        indicatorColor: AppColors.primarySoft,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.explore_outlined),
-            selectedIcon: Icon(Icons.explore, color: AppColors.blue),
-            label: 'Khám phá',
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 16,
+              offset: const Offset(0, -4),
+            ),
+          ],
+          border: const Border(
+            top: BorderSide(color: Color(0xFFF1F5F9), width: 1),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.menu_book_outlined),
-            selectedIcon: Icon(Icons.menu_book, color: AppColors.blue),
-            label: 'Từ điển',
+        ),
+        child: SafeArea(
+          top: false,
+          child: NavigationBar(
+            selectedIndex: _currentIndex,
+            onDestinationSelected: (index) {
+              if (index == _learnTabIndex && _currentIndex != _learnTabIndex) {
+                _learnInitialTabIndex = 0;
+              }
+              _selectTab(index);
+            },
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            height: 64,
+            indicatorColor: AppColors.primarySoft,
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.explore_outlined),
+                selectedIcon:
+                    Icon(Icons.explore_rounded, color: AppColors.primary),
+                label: 'Khám phá',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.menu_book_outlined),
+                selectedIcon:
+                    Icon(Icons.menu_book_rounded, color: AppColors.primary),
+                label: 'Từ điển',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.g_translate_outlined),
+                selectedIcon:
+                    Icon(Icons.g_translate_rounded, color: AppColors.primary),
+                label: 'Dịch',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.school_outlined),
+                selectedIcon:
+                    Icon(Icons.school_rounded, color: AppColors.primary),
+                label: 'Học tập',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.fact_check_outlined),
+                selectedIcon:
+                    Icon(Icons.fact_check_rounded, color: AppColors.primary),
+                label: 'Thi thử',
+              ),
+            ],
           ),
-          NavigationDestination(
-            icon: Icon(Icons.g_translate_outlined),
-            selectedIcon: Icon(Icons.g_translate, color: AppColors.blue),
-            label: 'Dịch',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.school_outlined),
-            selectedIcon: Icon(Icons.school, color: AppColors.blue),
-            label: 'Học tập',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.fact_check_outlined),
-            selectedIcon: Icon(Icons.fact_check, color: AppColors.blue),
-            label: 'Thi thử',
-          ),
-        ],
+        ),
       ),
     );
   }

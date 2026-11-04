@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../shared/ui.dart';
+import 'exam_page.dart';
 import 'models/exam_models.dart';
+import 'services/mock_exam_service.dart';
 
 /// Kết quả sau khi nộp bài: điểm tổng, điểm theo phần thi và xem lại
 /// từng câu kèm giải thích.
@@ -10,10 +12,12 @@ class ExamResultPage extends StatefulWidget {
     super.key,
     required this.exam,
     required this.result,
+    this.service,
   });
 
   final ExamDetail exam;
   final ExamResult result;
+  final MockExamService? service;
 
   @override
   State<ExamResultPage> createState() => _ExamResultPageState();
@@ -119,11 +123,75 @@ class _ExamResultPageState extends State<ExamResultPage> {
               question: e.question,
               review: e.review,
             ),
-          const SizedBox(height: 8),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.blue),
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Hoàn tất'),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    side: const BorderSide(color: AppColors.primary, width: 1.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(
+                    Icons.replay_rounded,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
+                  label: const Text(
+                    'Làm bài lại',
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  onPressed: () {
+                    final summary = ExamSummary(
+                      id: widget.exam.id,
+                      title: widget.exam.title,
+                      level: widget.exam.level,
+                      type: widget.exam.type,
+                      durationMinutes: widget.exam.durationMinutes,
+                      totalQuestions: widget.exam.questions.length,
+                      attempts: 0,
+                      bestPercent: 0,
+                    );
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (_) => ExamPage(
+                          test: summary,
+                          service: widget.service ?? MockExamService(),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'Hoàn tất',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

@@ -9,20 +9,24 @@ class ProfileTab extends StatelessWidget {
     required this.email,
     required this.fullName,
     required this.onLogout,
+    this.onOpenNotebook,
+    this.onOpenMockExam,
   });
 
   final String email;
   final String? fullName;
   final VoidCallback onLogout;
+  final VoidCallback? onOpenNotebook;
+  final VoidCallback? onOpenMockExam;
 
   void _confirmLogout(BuildContext context) {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Row(
           children: const [
-            Icon(Icons.logout_rounded, color: AppColors.googleRed, size: 24),
+            Icon(Icons.logout_rounded, color: AppColors.error, size: 24),
             SizedBox(width: 10),
             Text(
               'Đăng xuất',
@@ -36,7 +40,7 @@ class ProfileTab extends StatelessWidget {
         ),
         content: const Text(
           'Bạn có chắc chắn muốn đăng xuất khỏi tài khoản này?',
-          style: TextStyle(color: AppColors.darkText, fontSize: 15),
+          style: TextStyle(color: Color(0xFF64748B), fontSize: 14.5),
         ),
         actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         actions: [
@@ -44,7 +48,7 @@ class ProfileTab extends StatelessWidget {
             onPressed: () => Navigator.pop(dialogContext),
             child: const Text(
               'Hủy',
-              style: TextStyle(color: AppColors.placeholder, fontSize: 15),
+              style: TextStyle(color: AppColors.placeholder, fontSize: 14.5),
             ),
           ),
           ElevatedButton(
@@ -53,7 +57,7 @@ class ProfileTab extends StatelessWidget {
               onLogout();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.googleRed,
+              backgroundColor: AppColors.error,
               foregroundColor: Colors.white,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
@@ -66,21 +70,6 @@ class ProfileTab extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  void _showNotice(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(message),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          duration: const Duration(seconds: 2),
-        ),
-      );
   }
 
   void _showAboutDialog(BuildContext context) {
@@ -171,9 +160,16 @@ class ProfileTab extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
           decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.border),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
           child: Column(
             children: [
@@ -187,13 +183,13 @@ class ProfileTab extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: const LinearGradient(
-                        colors: [AppColors.primary, Color(0xFF43A497)],
+                        colors: [Color(0xFF2563EB), Color(0xFF60A5FA)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.blue.withValues(alpha: 0.3),
+                          color: AppColors.primary.withValues(alpha: 0.28),
                           blurRadius: 14,
                           offset: const Offset(0, 6),
                         ),
@@ -227,7 +223,7 @@ class ProfileTab extends StatelessWidget {
                       ),
                       child: const Icon(
                         Icons.verified_rounded,
-                        color: AppColors.blue,
+                        color: AppColors.primary,
                         size: 18,
                       ),
                     ),
@@ -279,15 +275,21 @@ class ProfileTab extends StatelessWidget {
               icon: Icons.bookmark_outline_rounded,
               iconColor: AppColors.blue,
               title: 'Sổ tay từ vựng & Kanji',
-              subtitle: 'Xem lại các từ đã lưu',
-              onTap: () => _showNotice(context, 'Mở sổ tay từ vựng đã lưu'),
+              subtitle: 'Xem lại các sổ tay và ôn tập từ vựng',
+              onTap: () {
+                Navigator.of(context).maybePop();
+                onOpenNotebook?.call();
+              },
             ),
             _buildMenuItem(
               icon: Icons.analytics_outlined,
               iconColor: AppColors.accent,
-              title: 'Lịch sử làm bài thi thử',
-              subtitle: 'Xem lại điểm số các đề thi',
-              onTap: () => _showNotice(context, 'Mở lịch sử thi thử JLPT'),
+              title: 'Làm bài thi thử',
+              subtitle: 'Luyện thi và kiểm tra trình độ JLPT',
+              onTap: () {
+                Navigator.of(context).maybePop();
+                onOpenMockExam?.call();
+              },
             ),
           ],
         ),

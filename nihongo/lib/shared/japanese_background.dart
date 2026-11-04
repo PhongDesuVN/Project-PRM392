@@ -31,13 +31,13 @@ class JapaneseBackground extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        // 1. Nền chuyển sắc mềm mại phong cách giấy Washi Nhật Bản
+        // 1. Nền chuyển sắc mềm mại phong cách hiện đại và tinh tế
         const DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Color(0xFFF5F2E9), Color(0xFFFAF8F1), Color(0xFFFFFEFA)],
+              colors: [Color(0xFFF1F5F9), Color(0xFFF8FAFC), Color(0xFFFFFFFF)],
               stops: [0.0, 0.45, 1.0],
             ),
           ),

@@ -102,7 +102,7 @@ class _DailyChallengeDetailPageState extends State<DailyChallengeDetailPage> {
                   ),
                   child: const Icon(
                     Icons.quiz_outlined,
-                    color: AppColors.blue,
+                    color: Color(0xFF0284C7),
                     size: 24,
                   ),
                 ),
@@ -119,14 +119,32 @@ class _DailyChallengeDetailPageState extends State<DailyChallengeDetailPage> {
                           color: Color(0xFF1E242B),
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Đã làm: $answeredCount/${widget.quizzes.length} câu • Đúng: $correctCount câu',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Color(0xFF64748B),
-                          fontWeight: FontWeight.w500,
-                        ),
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          Text(
+                            'Đã làm: $answeredCount/${widget.quizzes.length} câu',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF64748B),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            '•',
+                            style: TextStyle(color: Color(0xFFCBD5E1)),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Đúng: $correctCount câu',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF16A34A),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -158,9 +176,11 @@ class _DailyChallengeDetailPageState extends State<DailyChallengeDetailPage> {
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: hasAnswered
-              ? (isCorrect ? const Color(0xFF00B894) : const Color(0xFFE74C3C))
+              ? (isCorrect
+                    ? const Color(0xFF16A34A).withValues(alpha: 0.6)
+                    : const Color(0xFFDC2626).withValues(alpha: 0.6))
               : AppColors.border,
-          width: hasAnswered ? 1.4 : 1.0,
+          width: hasAnswered ? 1.5 : 1.0,
         ),
         boxShadow: [
           BoxShadow(
@@ -179,7 +199,7 @@ class _DailyChallengeDetailPageState extends State<DailyChallengeDetailPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.blue.withValues(alpha: 0.1),
+                  color: const Color(0xFFE0F2FE),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -187,7 +207,7 @@ class _DailyChallengeDetailPageState extends State<DailyChallengeDetailPage> {
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.blue,
+                    color: Color(0xFF0369A1),
                   ),
                 ),
               ),
@@ -213,27 +233,47 @@ class _DailyChallengeDetailPageState extends State<DailyChallengeDetailPage> {
               ),
               const Spacer(),
               if (hasAnswered)
-                Row(
-                  children: [
-                    Icon(
-                      isCorrect ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                      size: 18,
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 9,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isCorrect
+                        ? const Color(0xFFECFDF5)
+                        : const Color(0xFFFEF2F2),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
                       color: isCorrect
-                          ? const Color(0xFF00B894)
-                          : const Color(0xFFE74C3C),
+                          ? const Color(0xFF86EFAC)
+                          : const Color(0xFFFECACA),
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      isCorrect ? 'Đúng' : 'Sai',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        isCorrect
+                            ? Icons.check_circle_rounded
+                            : Icons.cancel_rounded,
+                        size: 16,
                         color: isCorrect
-                            ? const Color(0xFF00B894)
-                            : const Color(0xFFE74C3C),
+                            ? const Color(0xFF16A34A)
+                            : const Color(0xFFDC2626),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 5),
+                      Text(
+                        isCorrect ? 'Đúng' : 'Chưa đúng',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: isCorrect
+                              ? const Color(0xFF15803D)
+                              : const Color(0xFFB91C1C),
+                        ),
+                      ),
+                    ],
+                  ),
                 )
               else
                 const Text(
@@ -300,37 +340,55 @@ class _DailyChallengeDetailPageState extends State<DailyChallengeDetailPage> {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
+                color: isCorrect
+                    ? const Color(0xFFF0FDF4)
+                    : const Color(0xFFFFFBEB),
                 borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isCorrect
+                      ? const Color(0xFFBBF7D0)
+                      : const Color(0xFFFDE68A),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      const Icon(
-                        Icons.lightbulb_outline_rounded,
+                      Icon(
+                        isCorrect
+                            ? Icons.check_circle_outline_rounded
+                            : Icons.lightbulb_outline_rounded,
                         size: 16,
-                        color: Color(0xFF475569),
+                        color: isCorrect
+                            ? const Color(0xFF16A34A)
+                            : const Color(0xFFD97706),
                       ),
                       const SizedBox(width: 6),
-                      Text(
-                        'Đáp án đúng: ${quiz.options[quiz.correctIndex]}',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF334155),
+                      Expanded(
+                        child: Text(
+                          'Đáp án đúng: ${quiz.options[quiz.correctIndex]}',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: isCorrect
+                                ? const Color(0xFF15803D)
+                                : const Color(0xFF92400E),
+                          ),
                         ),
                       ),
                     ],
                   ),
                   if (quiz.explanation.isNotEmpty) ...[
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 5),
                     Text(
                       quiz.explanation,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12.5,
-                        color: Color(0xFF64748B),
+                        color: isCorrect
+                            ? const Color(0xFF166534)
+                            : const Color(0xFF78350F),
+                        height: 1.35,
                       ),
                     ),
                   ],
@@ -353,54 +411,132 @@ class _DailyChallengeDetailPageState extends State<DailyChallengeDetailPage> {
   }) {
     Color bgColor = const Color(0xFFF8FAFC);
     Color borderColor = const Color(0xFFE2E8F0);
+    double borderWidth = 1.0;
     Color textColor = const Color(0xFF1E242B);
-    Widget? trailingIcon;
+    FontWeight fontWeight = FontWeight.w600;
+    Color badgeBg = const Color(0xFFF1F5F9);
+    Color badgeTextColor = const Color(0xFF64748B);
+    Widget? trailingWidget;
+
+    const optionLetters = ['A', 'B', 'C', 'D'];
+    final letter = optionIndex < optionLetters.length
+        ? optionLetters[optionIndex]
+        : '${optionIndex + 1}';
 
     if (hasAnswered) {
       if (optionIndex == quiz.correctIndex) {
-        bgColor = const Color(0xFFE8F8F5);
-        borderColor = const Color(0xFF00B894);
-        textColor = const Color(0xFF00B894);
-        trailingIcon = const Icon(
-          Icons.check_circle_rounded,
-          size: 18,
-          color: Color(0xFF00B894),
+        // ĐÁP ÁN ĐÚNG: Nổi bật với màu xanh lá cây
+        bgColor = const Color(0xFFECFDF5);
+        borderColor = const Color(0xFF16A34A);
+        borderWidth = 1.8;
+        textColor = const Color(0xFF15803D);
+        fontWeight = FontWeight.w700;
+        badgeBg = const Color(0xFF16A34A);
+        badgeTextColor = Colors.white;
+        trailingWidget = Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: const Color(0xFF16A34A),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.check_rounded, size: 14, color: Colors.white),
+              SizedBox(width: 4),
+              Text(
+                'Đáp án đúng',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
         );
       } else if (optionIndex == selectedOption) {
-        bgColor = const Color(0xFFFDEDEC);
-        borderColor = const Color(0xFFE74C3C);
-        textColor = const Color(0xFFE74C3C);
-        trailingIcon = const Icon(
-          Icons.cancel_rounded,
-          size: 18,
-          color: Color(0xFFE74C3C),
+        // ĐÁP ÁN SAI MÀ NGƯỜI DÙNG CHỌN: Nổi bật với màu đỏ
+        bgColor = const Color(0xFFFEF2F2);
+        borderColor = const Color(0xFFDC2626);
+        borderWidth = 1.8;
+        textColor = const Color(0xFFB91C1C);
+        fontWeight = FontWeight.w700;
+        badgeBg = const Color(0xFFDC2626);
+        badgeTextColor = Colors.white;
+        trailingWidget = Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: const Color(0xFFDC2626),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.close_rounded, size: 14, color: Colors.white),
+              SizedBox(width: 4),
+              Text(
+                'Bạn đã chọn',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
         );
+      } else {
+        // Các đáp án khác không chọn: làm mờ nhẹ
+        textColor = const Color(0xFF94A3B8);
+        badgeTextColor = const Color(0xFF94A3B8);
       }
     }
 
     return InkWell(
       onTap: hasAnswered ? null : () => _chooseAnswer(quizIndex, optionIndex),
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
         decoration: BoxDecoration(
           color: bgColor,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: borderColor),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: borderColor, width: borderWidth),
         ),
         child: Row(
           children: [
+            Container(
+              width: 26,
+              height: 26,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: badgeBg,
+                borderRadius: BorderRadius.circular(7),
+              ),
+              child: Text(
+                letter,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: badgeTextColor,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
             Expanded(
               child: Text(
                 optionText,
                 style: TextStyle(
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  fontWeight: fontWeight,
                   color: textColor,
                 ),
               ),
             ),
-            ?trailingIcon,
+            if (trailingWidget != null) ...[
+              const SizedBox(width: 8),
+              trailingWidget,
+            ],
           ],
         ),
       ),

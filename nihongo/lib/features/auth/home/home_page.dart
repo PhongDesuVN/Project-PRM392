@@ -1,12 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import '../../../shared/japanese_background.dart';
 import '../../../shared/ui.dart';
 import '../auth_service.dart';
 import '../login/login_page.dart';
 
-/// Man hinh tam sau khi dang nhap thanh cong, dung de xac nhan
-/// luong auth da chay thong. Se duoc thay bang man hinh hoc that sau.
+/// Màn hình tạm sau khi đăng nhập thành công.
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.email, this.fullName});
 
@@ -49,10 +48,18 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.check_circle_outline,
-                    color: AppColors.blue,
-                    size: 72,
+                  Container(
+                    width: 76,
+                    height: 76,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primarySoft,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check_circle_rounded,
+                      color: AppColors.primary,
+                      size: 44,
+                    ),
                   ),
                   const SizedBox(height: 20),
                   Text(
@@ -61,17 +68,17 @@ class _HomePageState extends State<HomePage> {
                         : 'Đăng nhập thành công',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                      color: AppColors.blue,
-                      fontSize: 26,
-                      fontWeight: FontWeight.w700,
+                      color: AppColors.ink,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   Text(
                     widget.email,
                     style: const TextStyle(
-                      color: AppColors.darkText,
-                      fontSize: 16,
+                      color: AppColors.muted,
+                      fontSize: 15,
                     ),
                   ),
                   const SizedBox(height: 40),
@@ -81,15 +88,18 @@ class _HomePageState extends State<HomePage> {
                     child: OutlinedButton(
                       onPressed: _logout,
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.blue,
-                        side: const BorderSide(color: AppColors.blue),
+                        foregroundColor: AppColors.primary,
+                        side: const BorderSide(color: AppColors.primary),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(7),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
                       child: const Text(
                         'Đăng xuất',
-                        style: TextStyle(fontSize: 17),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ),
@@ -102,3 +112,4 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
