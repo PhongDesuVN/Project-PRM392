@@ -93,7 +93,10 @@ class _DashboardPageState extends State<DashboardPage> {
                 MaterialPageRoute<void>(builder: (_) => const LoginPage()),
               );
             },
-            child: const Text('Đăng nhập', style: TextStyle(color: Colors.white)),
+            child: const Text(
+              'Đăng nhập',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -165,7 +168,6 @@ class _DashboardPageState extends State<DashboardPage> {
       _openDictionary(trimmed);
     }
   }
-
 
   void _openProfile() {
     if (_isGuest) {
@@ -273,8 +275,9 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.canvas,
       body: JapaneseBackground(
-        petalCount: 10,
+        petalCount: 6,
         child: SafeArea(child: _buildTab()),
       ),
       bottomNavigationBar: NavigationBar(
@@ -285,8 +288,8 @@ class _DashboardPageState extends State<DashboardPage> {
           }
           _selectTab(index);
         },
-        backgroundColor: Colors.white,
-        indicatorColor: AppColors.blue.withValues(alpha: 0.15),
+        backgroundColor: AppColors.surface,
+        indicatorColor: AppColors.primarySoft,
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.explore_outlined),

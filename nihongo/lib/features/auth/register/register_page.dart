@@ -2,7 +2,6 @@
 
 import '../../../core/api.dart';
 import '../../../shared/ui.dart';
-import '../../../shared/japanese_background.dart';
 import '../auth_service.dart';
 import '../../dashboard/dashboard_page.dart';
 
@@ -49,10 +48,8 @@ class _RegisterPageState extends State<RegisterPage> {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute<void>(
-          builder: (_) => DashboardPage(
-            email: result.email,
-            fullName: result.fullName,
-          ),
+          builder: (_) =>
+              DashboardPage(email: result.email, fullName: result.fullName),
         ),
         (route) => false,
       );
@@ -67,13 +64,15 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body:JapaneseBackground(
-      child: SafeArea(
+      backgroundColor: AppColors.canvas,
+      body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) => SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight - 16),
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight - 16,
+              ),
               child: Column(
                 children: [
                   Align(
@@ -88,16 +87,24 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                   const Text(
                     'Tạo tài khoản',
                     style: TextStyle(
-                      color: AppColors.blue,
-                      fontSize: 30,
-                      fontWeight: FontWeight.w700,
+                      color: AppColors.ink,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const SizedBox(height: 66),
+                  const SizedBox(height: 6),
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Bắt đầu hành trình học tiếng Nhật.',
+                      style: TextStyle(color: AppColors.muted, fontSize: 15),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                   Form(
                     key: _formKey,
                     child: Column(
@@ -109,8 +116,8 @@ class _RegisterPageState extends State<RegisterPage> {
                           textInputAction: TextInputAction.next,
                           validator: (value) =>
                               value == null || value.trim().isEmpty
-                                  ? 'Vui lòng nhập họ và tên'
-                                  : null,
+                              ? 'Vui lòng nhập họ và tên'
+                              : null,
                         ),
                         const SizedBox(height: 16),
                         AuthTextField(
@@ -128,7 +135,8 @@ class _RegisterPageState extends State<RegisterPage> {
                           isPassword: true,
                           controller: _passwordController,
                           textInputAction: TextInputAction.next,
-                          validator: (value) => value == null || value.length < 6
+                          validator: (value) =>
+                              value == null || value.length < 6
                               ? 'Mật khẩu cần ít nhất 6 ký tự'
                               : null,
                         ),
@@ -138,10 +146,11 @@ class _RegisterPageState extends State<RegisterPage> {
                           prefixIcon: Icons.lock_outline,
                           isPassword: true,
                           textInputAction: TextInputAction.done,
-                          validator: (value) => value != _passwordController.text
+                          validator: (value) =>
+                              value != _passwordController.text
                               ? 'Mật khẩu nhập lại chưa khớp'
                               : null,
-                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -154,9 +163,8 @@ class _RegisterPageState extends State<RegisterPage> {
                         height: 34,
                         child: Checkbox(
                           value: _acceptedTerms,
-                          onChanged: (value) => setState(
-                            () => _acceptedTerms = value ?? false,
-                          ),
+                          onChanged: (value) =>
+                              setState(() => _acceptedTerms = value ?? false),
                           side: const BorderSide(
                             color: AppColors.placeholder,
                             width: 1.5,
@@ -171,8 +179,8 @@ class _RegisterPageState extends State<RegisterPage> {
                             const Text(
                               'Tôi đồng ý với các ',
                               style: TextStyle(
-                                color: AppColors.darkText,
-                                fontSize: 16,
+                                color: AppColors.muted,
+                                fontSize: 14,
                               ),
                             ),
                             GestureDetector(
@@ -182,17 +190,17 @@ class _RegisterPageState extends State<RegisterPage> {
                               child: const Text(
                                 'điều khoản sử dụng',
                                 style: TextStyle(
-                                  color: AppColors.blue,
-                                  fontSize: 16,
-                                  decoration: TextDecoration.underline,
+                                  color: AppColors.primary,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ),
                             const Text(
                               ' của Nihon',
                               style: TextStyle(
-                                color: AppColors.darkText,
-                                fontSize: 16,
+                                color: AppColors.muted,
+                                fontSize: 14,
                               ),
                             ),
                           ],
@@ -203,14 +211,14 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
-                    height: 56,
+                    height: 52,
                     child: FilledButton(
-                        onPressed: _isLoading ? null : _submit,
+                      onPressed: _isLoading ? null : _submit,
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.blue,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(7),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                       child: _isLoading
@@ -224,12 +232,15 @@ class _RegisterPageState extends State<RegisterPage> {
                             )
                           : const Text(
                               'Đăng kí',
-                              style: TextStyle(fontSize: 19),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                     ),
                   ),
                   const Padding(
-                    padding: EdgeInsets.only(top: 60, bottom: 20),
+                    padding: EdgeInsets.only(top: 30, bottom: 20),
                     child: _LoginFooter(),
                   ),
                 ],
@@ -237,7 +248,6 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -251,9 +261,8 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 }
 

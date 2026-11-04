@@ -124,7 +124,7 @@ class ExtensionsBottomSheet extends StatelessWidget {
                     title: 'Từ điển',
                     subtitle: 'Tra cứu từ vựng, ngữ pháp, kanji',
                     icon: Icons.menu_book_rounded,
-                    color: const Color(0xFF1976D2),
+                    color: AppColors.primary,
                     onTap: () {
                       Navigator.pop(context);
                       onOpenDictionary();

@@ -117,9 +117,7 @@ class ApiClient {
     String? contentType,
     String? bearerToken,
   }) {
-    final headers = <String, String>{
-      'Accept': 'application/json',
-    };
+    final headers = <String, String>{'Accept': 'application/json'};
     if (contentType != null) {
       headers['Content-Type'] = contentType;
     }
@@ -145,10 +143,7 @@ class ApiClient {
       queryParameters: queryParameters.isEmpty ? null : queryParameters,
     );
     final response = await _client
-        .get(
-          uri,
-          headers: _buildHeaders(bearerToken: bearerToken),
-        )
+        .get(uri, headers: _buildHeaders(bearerToken: bearerToken))
         .timeout(ApiConfig.timeout);
 
     return _handleResponse(response);
@@ -207,10 +202,7 @@ class ApiClient {
       queryParameters: queryParameters.isEmpty ? null : queryParameters,
     );
     final response = await _client
-        .get(
-          uri,
-          headers: _buildHeaders(bearerToken: bearerToken),
-        )
+        .get(uri, headers: _buildHeaders(bearerToken: bearerToken))
         .timeout(ApiConfig.timeout);
 
     final rawBody = utf8.decode(response.bodyBytes);

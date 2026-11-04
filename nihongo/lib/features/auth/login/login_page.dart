@@ -17,7 +17,6 @@ import '../../dashboard/dashboard_page.dart';
 import '../../dashboard/learn/notebook/services/notebook_service.dart';
 import '../../dashboard/search_history_service.dart';
 import '../register/register_page.dart';
-import '../../../shared/japanese_background.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -216,119 +215,114 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: JapaneseBackground(
-        child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) => SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - 16,
-                ),
-                child: Column(
-                  children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: IconButton(
-                        tooltip: 'Quay lại',
-                        onPressed: () => Navigator.maybePop(context),
-                        icon: const Icon(
-                          Icons.arrow_back_ios_new,
-                          color: Color(0xFF888888),
-                          size: 22,
+      backgroundColor: AppColors.canvas,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight - 28,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  IconButton(
+                    tooltip: 'Quay lại',
+                    onPressed: () => Navigator.maybePop(context),
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                  ),
+                  const SizedBox(height: 12),
+                  const Center(
+                    child: SizedBox(
+                      width: 148,
+                      height: 48,
+                      child: FittedBox(child: NihonLogo()),
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  const Text(
+                    'Đăng nhập',
+                    style: TextStyle(
+                      color: AppColors.ink,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  const Text(
+                    'Chào mừng bạn quay lại.',
+                    style: TextStyle(color: AppColors.muted, fontSize: 15),
+                  ),
+                  const SizedBox(height: 24),
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        AuthTextField(
+                          hintText: 'Nhập email của bạn',
+                          prefixIcon: Icons.mail_outline_rounded,
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          validator: _validateEmail,
                         ),
-                      ),
+                        const SizedBox(height: 14),
+                        AuthTextField(
+                          hintText: 'Mật khẩu',
+                          prefixIcon: Icons.lock_outline_rounded,
+                          isPassword: true,
+                          controller: _passwordController,
+                          textInputAction: TextInputAction.done,
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Vui lòng nhập mật khẩu'
+                              : null,
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 12),
-                    const NihonLogo(),
-                    const SizedBox(height: 72),
-                    Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          AuthTextField(
-                            hintText: 'Nhập email của bạn',
-                            prefixIcon: Icons.person_outline,
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            textInputAction: TextInputAction.next,
-                            validator: _validateEmail,
-                          ),
-                          const SizedBox(height: 16),
-                          AuthTextField(
-                            hintText: 'Mật khẩu',
-                            prefixIcon: Icons.visibility_outlined,
-                            isPassword: true,
-                            controller: _passwordController,
-                            textInputAction: TextInputAction.done,
-                            validator: (value) => value == null || value.isEmpty
-                                ? 'Vui lòng nhập mật khẩu'
-                                : null,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _PrimaryButton(
-                      label: 'Đăng nhập',
-                      isLoading: _isLoading,
-                      onPressed: _isLoading ? null : _submit,
-                    ),
-                    const SizedBox(height: 22),
-                    TextButton(
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
                       onPressed: () => showForgotPasswordDialog(context),
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppColors.darkText,
-                      ),
-                      child: const Text(
-                        'Quên mật khẩu?',
-                        style: TextStyle(fontSize: 18),
-                      ),
+                      child: const Text('Quên mật khẩu?'),
                     ),
-                    const SizedBox(height: 24),
-                    GoogleSignInButton(
-                      onPressed: _isLoading ? () {} : _signInWithGoogle,
-                    ),
-                    const SizedBox(height: 68),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 24, bottom: 24),
-                      child: Wrap(
-                        alignment: WrapAlignment.center,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          const Text(
-                            'Bạn chưa có tài khoản Nihon?',
-                            style: TextStyle(
-                              color: AppColors.darkText,
-                              fontSize: 16,
+                  ),
+                  _PrimaryButton(
+                    label: 'Đăng nhập',
+                    isLoading: _isLoading,
+                    onPressed: _isLoading ? null : _submit,
+                  ),
+                  const SizedBox(height: 14),
+                  GoogleSignInButton(
+                    onPressed: _isLoading ? () {} : _signInWithGoogle,
+                  ),
+                  const SizedBox(height: 28),
+                  Center(
+                    child: Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        const Text(
+                          'Bạn chưa có tài khoản Nihon?',
+                          style: TextStyle(
+                            color: AppColors.muted,
+                            fontSize: 14,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute<void>(
+                              builder: (_) => const RegisterPage(),
                             ),
                           ),
-                          TextButton(
-                            onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute<void>(
-                                builder: (_) => const RegisterPage(),
-                              ),
-                            ),
-                            style: TextButton.styleFrom(
-                              foregroundColor: AppColors.blue,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 5,
-                              ),
-                            ),
-                            child: const Text(
-                              'Đăng kí',
-                              style: TextStyle(
-                                fontSize: 16,
-                                decoration: TextDecoration.underline,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                          child: const Text('Đăng ký'),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -361,13 +355,15 @@ class _PrimaryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 56,
+      height: 52,
       child: FilledButton(
         onPressed: onPressed,
         style: FilledButton.styleFrom(
           backgroundColor: AppColors.blue,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
         child: isLoading
             ? const SizedBox(
@@ -378,7 +374,13 @@ class _PrimaryButton extends StatelessWidget {
                   color: Colors.white,
                 ),
               )
-            : Text(label, style: const TextStyle(fontSize: 19)),
+            : Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
       ),
     );
   }

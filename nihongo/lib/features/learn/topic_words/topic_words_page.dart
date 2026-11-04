@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../shared/ui.dart';
 import 'flashcard_page.dart';
 import 'models/topic_word_model.dart';
 import 'services/topic_words_service.dart';
@@ -313,7 +314,7 @@ class _TopicWordsPageState extends State<TopicWordsPage> {
                   style: const TextStyle(
                     fontSize: 42,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF1565C0),
+                    color: AppColors.ink,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -439,7 +440,7 @@ class _TopicWordsPageState extends State<TopicWordsPage> {
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF1565C0),
+                    color: AppColors.ink,
                   ),
                 ),
                 const SizedBox(width: 14),

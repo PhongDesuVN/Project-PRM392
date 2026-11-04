@@ -438,7 +438,7 @@ class _NotebookDetailPageState extends State<NotebookDetailPage> {
                 width: 58,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E88E5),
+                  color: AppColors.accent,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Center(
@@ -596,7 +596,7 @@ class _NotebookDetailPageState extends State<NotebookDetailPage> {
                   style: const TextStyle(
                     fontSize: 38,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF1565C0),
+                    color: AppColors.primary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -683,7 +683,7 @@ class _NotebookDetailPageState extends State<NotebookDetailPage> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isSelected ? const Color(0xFF1E88E5) : const Color(0xFFE2E8F0),
+          color: isSelected ? AppColors.primary : AppColors.border,
           width: isSelected ? 1.6 : 1.0,
         ),
         boxShadow: [
@@ -716,7 +716,7 @@ class _NotebookDetailPageState extends State<NotebookDetailPage> {
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF1565C0),
+                        color: AppColors.primary,
                       ),
                     ),
                     const SizedBox(width: 8),

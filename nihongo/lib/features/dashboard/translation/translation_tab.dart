@@ -23,6 +23,7 @@ class _TranslationTabState extends State<TranslationTab> {
   @override
   void dispose() {
     _textController.dispose();
+    _translationService.dispose();
     super.dispose();
   }
 
@@ -44,6 +45,9 @@ class _TranslationTabState extends State<TranslationTab> {
         text: text,
         sourceLanguage: _japaneseToVietnamese ? 'ja' : 'vi',
         targetLanguage: _japaneseToVietnamese ? 'vi' : 'ja',
+        onChunk: (partial) {
+          if (mounted) setState(() => _translatedText = partial);
+        },
         onStatus: (message) {
           if (mounted) setState(() => _translationStatus = message);
         },
@@ -90,7 +94,7 @@ class _TranslationTabState extends State<TranslationTab> {
         const DashboardToolHeading(
           eyebrow: 'CÔNG CỤ',
           title: 'Dịch văn bản',
-          subtitle: 'Dịch trên thiết bị; cần mạng để tải mô hình lần đầu.',
+          subtitle: 'Dịch trực tuyến Nhật - Việt bằng Gemini AI.',
         ),
         const SizedBox(height: 22),
         Row(
@@ -103,6 +107,40 @@ class _TranslationTabState extends State<TranslationTab> {
             ),
             Expanded(child: _LanguageLabel(targetLanguage)),
           ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                height: 48,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  color: AppColors.primarySoft,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.auto_awesome_rounded, color: AppColors.primary),
+                    SizedBox(width: 8),
+                    Text(
+                      'Gemini AI  ·  Online',
+                      style: TextStyle(
+                        color: AppColors.ink,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Dịch qua Gemini, cần Internet và API key đã lưu trong cấu hình AI của OCR.',
+          style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
         ),
         const SizedBox(height: 12),
         TextField(

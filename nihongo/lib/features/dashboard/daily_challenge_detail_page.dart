@@ -207,7 +207,7 @@ class _DailyChallengeDetailPageState extends State<DailyChallengeDetailPage> {
                     fontWeight: FontWeight.w600,
                     color: quiz.type == DailyQuizType.grammar
                         ? const Color(0xFF5E35B1)
-                        : const Color(0xFF1565C0),
+                        : AppColors.primary,
                   ),
                 ),
               ),

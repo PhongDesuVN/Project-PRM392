@@ -23,9 +23,9 @@ class DashboardToolHeading extends StatelessWidget {
           eyebrow,
           style: const TextStyle(
             color: AppColors.blue,
-            fontSize: 11,
+            fontSize: 10,
             fontWeight: FontWeight.w800,
-            letterSpacing: 1.1,
+            letterSpacing: 0.8,
           ),
         ),
         const SizedBox(height: 5),
@@ -33,8 +33,8 @@ class DashboardToolHeading extends StatelessWidget {
           title,
           style: const TextStyle(
             color: AppColors.darkText,
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
+            fontSize: 26,
+            fontWeight: FontWeight.w800,
           ),
         ),
         const SizedBox(height: 4),
@@ -65,13 +65,13 @@ class DashboardEmptyState extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.82),
-        borderRadius: BorderRadius.circular(14),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border),
       ),
       child: Column(
         children: [
-          Icon(icon, color: AppColors.blue, size: 30),
+          Icon(icon, color: AppColors.primary, size: 30),
           const SizedBox(height: 9),
           Text(
             title,

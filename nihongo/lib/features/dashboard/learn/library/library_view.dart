@@ -220,9 +220,9 @@ class _LibraryViewState extends State<LibraryView> {
               child: AlphabetCard(
                 title: 'Hira',
                 badgeSymbol: 'あ',
-                themeColor: const Color(0xFF1976D2),
-                borderColor: const Color(0xFF90CAF9),
-                badgeColor: const Color(0xFF1565C0),
+                themeColor: AppColors.primary,
+                borderColor: AppColors.primarySoft,
+                badgeColor: AppColors.primary,
                 badgeRotation: -0.15,
                 onTap: () {
                   if (widget.isGuest) {

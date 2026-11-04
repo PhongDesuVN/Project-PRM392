@@ -186,7 +186,7 @@ class _HomeTabState extends State<HomeTab> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: const [
-                  Icon(Icons.auto_awesome, size: 16, color: Color(0xFF8E44AD)),
+                  Icon(Icons.auto_awesome, size: 16, color: AppColors.gold),
                   SizedBox(width: 5),
                   Text(
                     '100%',
@@ -229,6 +229,16 @@ class _HomeTabState extends State<HomeTab> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const Text(
+                    '今日の学び  ·  NIHONGO',
+                    style: TextStyle(
+                      color: AppColors.accent,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
                   Text(
                     greeting,
                     style: const TextStyle(
@@ -280,7 +290,7 @@ class _HomeTabState extends State<HomeTab> {
                   children: [
                     const Icon(
                       Icons.search_rounded,
-                      color: Color(0xFF6C5CE7),
+                      color: AppColors.primary,
                       size: 24,
                     ),
                     const SizedBox(width: 10),
@@ -321,7 +331,7 @@ class _HomeTabState extends State<HomeTab> {
                     Expanded(
                       child: _SearchToolSquareButton(
                         icon: Icons.camera_alt_outlined,
-                        iconColor: const Color(0xFF0984E3),
+                        iconColor: AppColors.primary,
                         label: 'Chụp ảnh',
                         onTap: widget.onCameraSearch,
                       ),
@@ -334,7 +344,7 @@ class _HomeTabState extends State<HomeTab> {
                           style: TextStyle(
                             fontSize: 19,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF00B894),
+                            color: AppColors.accent,
                           ),
                         ),
                         label: 'Tra bộ thủ',
@@ -345,7 +355,7 @@ class _HomeTabState extends State<HomeTab> {
                     Expanded(
                       child: _SearchToolSquareButton(
                         icon: Icons.edit_note_rounded,
-                        iconColor: const Color(0xFFE17055),
+                        iconColor: AppColors.gold,
                         label: 'Viết Kanji',
                         onTap: widget.onHandwritingSearch,
                       ),
@@ -536,8 +546,8 @@ class _HomeTabState extends State<HomeTab> {
                     decoration: BoxDecoration(
                       color:
                           (quiz.type == DailyQuizType.grammar
-                                  ? const Color(0xFF7E57C2)
-                                  : AppColors.blue)
+                                  ? AppColors.accent
+                                  : AppColors.primary)
                               .withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -549,8 +559,8 @@ class _HomeTabState extends State<HomeTab> {
                             : (quiz.prompt.length > 2 ? 18 : 22),
                         fontWeight: FontWeight.w900,
                         color: quiz.type == DailyQuizType.grammar
-                            ? const Color(0xFF7E57C2)
-                            : AppColors.blue,
+                            ? AppColors.accent
+                            : AppColors.primary,
                       ),
                     ),
                   ),
@@ -568,9 +578,9 @@ class _HomeTabState extends State<HomeTab> {
                               ),
                               decoration: BoxDecoration(
                                 color: quiz.type == DailyQuizType.grammar
-                                    ? const Color(0xFFEDE7F6)
-                                    : const Color(0xFFE3F2FD),
-                                borderRadius: BorderRadius.circular(4),
+                                    ? AppColors.accent.withValues(alpha: 0.1)
+                                    : AppColors.primarySoft,
+                                borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
                                 quiz.categoryLabel,
@@ -578,8 +588,8 @@ class _HomeTabState extends State<HomeTab> {
                                   fontSize: 10.5,
                                   fontWeight: FontWeight.w700,
                                   color: quiz.type == DailyQuizType.grammar
-                                      ? const Color(0xFF5E35B1)
-                                      : const Color(0xFF1565C0),
+                                      ? AppColors.accent
+                                      : AppColors.primary,
                                 ),
                               ),
                             ),
@@ -642,13 +652,13 @@ class _HomeTabState extends State<HomeTab> {
 
                   if (_selectedAnswerIndex != null) {
                     if (isCorrect) {
-                      bgColor = const Color(0xFFE8F8F5);
-                      borderColor = const Color(0xFF00B894);
-                      textColor = const Color(0xFF00B894);
+                      bgColor = AppColors.primarySoft;
+                      borderColor = AppColors.primary;
+                      textColor = AppColors.primary;
                     } else if (isSelected) {
-                      bgColor = const Color(0xFFFDEDEC);
-                      borderColor = const Color(0xFFE74C3C);
-                      textColor = const Color(0xFFE74C3C);
+                      bgColor = AppColors.error.withValues(alpha: 0.1);
+                      borderColor = AppColors.error;
+                      textColor = AppColors.error;
                     }
                   }
 
@@ -688,8 +698,8 @@ class _HomeTabState extends State<HomeTab> {
                           : Icons.cancel_rounded,
                       size: 16,
                       color: _selectedAnswerIndex == quiz.correctIndex
-                          ? const Color(0xFF00B894)
-                          : const Color(0xFFE74C3C),
+                          ? AppColors.primary
+                          : AppColors.error,
                     ),
                     const SizedBox(width: 6),
                     Expanded(
@@ -701,8 +711,8 @@ class _HomeTabState extends State<HomeTab> {
                           fontSize: 12.5,
                           fontWeight: FontWeight.w700,
                           color: _selectedAnswerIndex == quiz.correctIndex
-                              ? const Color(0xFF00B894)
-                              : const Color(0xFFE74C3C),
+                              ? AppColors.primary
+                              : AppColors.error,
                         ),
                       ),
                     ),
@@ -722,7 +732,7 @@ class _HomeTabState extends State<HomeTab> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             gradient: const LinearGradient(
-              colors: [Color(0xFFEBF4FF), Color(0xFFF5F9FF)],
+              colors: [AppColors.primarySoft, Color(0xFFF7FAF9)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -845,7 +855,7 @@ class _HomeTabState extends State<HomeTab> {
 }
 
 /// Nút vuông trong hàng công cụ tìm kiếm: Chụp ảnh, Tra bộ thủ, Viết Kanji
-class _SearchToolSquareButton extends StatelessWidget {
+class _SearchToolSquareButton extends StatefulWidget {
   const _SearchToolSquareButton({
     this.icon,
     this.customIcon,
@@ -861,36 +871,66 @@ class _SearchToolSquareButton extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
+  State<_SearchToolSquareButton> createState() =>
+      _SearchToolSquareButtonState();
+}
+
+class _SearchToolSquareButtonState extends State<_SearchToolSquareButton> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
     return Material(
-      color: const Color(0xFFF8FAFC),
+      color: AppColors.surface,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
-        onTap: onTap,
+        onTap: widget.onTap,
+        onHighlightChanged: (pressed) => setState(() => _pressed = pressed),
         borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border.withValues(alpha: 0.6)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (customIcon != null)
-                customIcon!
-              else if (icon != null)
-                Icon(icon, size: 21, color: iconColor ?? AppColors.blue),
-              const SizedBox(height: 5),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.darkText,
-                ),
+        child: AnimatedScale(
+          scale: _pressed ? 0.97 : 1,
+          duration: const Duration(milliseconds: 130),
+          curve: Curves.easeOutCubic,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: _pressed ? AppColors.accent : AppColors.border,
               ),
-            ],
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.ink.withValues(
+                    alpha: _pressed ? 0.04 : 0.015,
+                  ),
+                  blurRadius: _pressed ? 4 : 8,
+                  offset: Offset(0, _pressed ? 1 : 3),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (widget.customIcon != null)
+                  widget.customIcon!
+                else if (widget.icon != null)
+                  Icon(
+                    widget.icon,
+                    size: 21,
+                    color: widget.iconColor ?? AppColors.primary,
+                  ),
+                const SizedBox(height: 5),
+                Text(
+                  widget.label,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.darkText,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -899,7 +939,7 @@ class _SearchToolSquareButton extends StatelessWidget {
 }
 
 /// Nút dạng viên thuốc rộng (Bảng chữ cái, Tiện ích mở rộng)
-class _QuickPillButton extends StatelessWidget {
+class _QuickPillButton extends StatefulWidget {
   const _QuickPillButton({
     required this.title,
     required this.trailingWidget,
@@ -911,39 +951,57 @@ class _QuickPillButton extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
+  State<_QuickPillButton> createState() => _QuickPillButtonState();
+}
+
+class _QuickPillButtonState extends State<_QuickPillButton> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white.withValues(alpha: 0.96),
+      color: AppColors.surface,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
-        onTap: onTap,
+        onTap: widget.onTap,
+        onHighlightChanged: (pressed) => setState(() => _pressed = pressed),
         borderRadius: BorderRadius.circular(14),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.border),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.02),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
+        child: AnimatedScale(
+          scale: _pressed ? 0.98 : 1,
+          duration: const Duration(milliseconds: 140),
+          curve: Curves.easeOutCubic,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: _pressed ? AppColors.accent : AppColors.border,
               ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.darkText,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.ink.withValues(
+                    alpha: _pressed ? 0.03 : 0.06,
+                  ),
+                  blurRadius: _pressed ? 4 : 10,
+                  offset: Offset(0, _pressed ? 1 : 4),
                 ),
-              ),
-              trailingWidget,
-            ],
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  widget.title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.darkText,
+                  ),
+                ),
+                widget.trailingWidget,
+              ],
+            ),
           ),
         ),
       ),

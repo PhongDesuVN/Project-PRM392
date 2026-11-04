@@ -37,11 +37,7 @@ class JapaneseBackground extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFFFFF4F2), // Ánh bình minh hồng đào nhẹ
-                Color(0xFFF3F7FC), // Sương mù lam thanh mát
-                Colors.white,
-              ],
+              colors: [Color(0xFFF5F2E9), Color(0xFFFAF8F1), Color(0xFFFFFEFA)],
               stops: [0.0, 0.45, 1.0],
             ),
           ),
@@ -51,9 +47,12 @@ class JapaneseBackground extends StatelessWidget {
         if (showSun)
           const IgnorePointer(
             child: RepaintBoundary(
-              child: CustomPaint(
-                painter: _FujiAndSunPainter(),
-                size: Size.infinite,
+              child: Opacity(
+                opacity: 0.18,
+                child: CustomPaint(
+                  painter: _FujiAndSunPainter(),
+                  size: Size.infinite,
+                ),
               ),
             ),
           ),
@@ -61,9 +60,12 @@ class JapaneseBackground extends StatelessWidget {
         // 3. Chi tiết Nhật cổ: Búp bê Daruma & Bóng Samurai
         const IgnorePointer(
           child: RepaintBoundary(
-            child: CustomPaint(
-              painter: _JapaneseFolklorePainter(),
-              size: Size.infinite,
+            child: Opacity(
+              opacity: 0.025,
+              child: CustomPaint(
+                painter: _JapaneseFolklorePainter(),
+                size: Size.infinite,
+              ),
             ),
           ),
         ),
@@ -71,9 +73,12 @@ class JapaneseBackground extends StatelessWidget {
         // 4. Hoa anh đào (Sakura) & Lá phong đỏ (Momiji) rơi nhẹ
         IgnorePointer(
           child: RepaintBoundary(
-            child: CustomPaint(
-              painter: _NatureElementsPainter(elements),
-              size: Size.infinite,
+            child: Opacity(
+              opacity: 0.08,
+              child: CustomPaint(
+                painter: _NatureElementsPainter(elements),
+                size: Size.infinite,
+              ),
             ),
           ),
         ),
@@ -108,9 +113,9 @@ class _FujiAndSunPainter extends CustomPainter {
     final sunPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          const Color(0xFFE23832).withValues(alpha: 0.18),
-          const Color(0xFFE23832).withValues(alpha: 0.08),
-          const Color(0xFFE23832).withValues(alpha: 0.0),
+          const Color(0xFFC64232).withValues(alpha: 0.18),
+          const Color(0xFFC64232).withValues(alpha: 0.08),
+          const Color(0xFFC64232).withValues(alpha: 0.0),
         ],
         stops: const [0.45, 0.8, 1.0],
       ).createShader(Rect.fromCircle(center: sunCenter, radius: sunRadius));
@@ -151,9 +156,9 @@ class _FujiAndSunPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          const Color(0xFF2C3E6B).withValues(alpha: 0.16),
-          const Color(0xFF4A69BD).withValues(alpha: 0.08),
-          const Color(0xFF4A69BD).withValues(alpha: 0.02),
+          const Color(0xFF403A35).withValues(alpha: 0.16),
+          const Color(0xFF655A52).withValues(alpha: 0.08),
+          const Color(0xFF655A52).withValues(alpha: 0.02),
         ],
         stops: const [0.0, 0.55, 1.0],
       ).createShader(Rect.fromLTRB(baseLeftX, fujiTopY, baseRightX, fujiBaseY));
@@ -191,19 +196,22 @@ class _FujiAndSunPainter extends CustomPainter {
     snowPath.close();
 
     final snowPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          Colors.white.withValues(alpha: 0.85),
-          Colors.white.withValues(alpha: 0.45),
-        ],
-      ).createShader(Rect.fromLTRB(
-        fujiCenterX - w * 0.12,
-        fujiTopY,
-        fujiCenterX + w * 0.12,
-        snowBottomY + 12,
-      ));
+      ..shader =
+          LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.white.withValues(alpha: 0.85),
+              Colors.white.withValues(alpha: 0.45),
+            ],
+          ).createShader(
+            Rect.fromLTRB(
+              fujiCenterX - w * 0.12,
+              fujiTopY,
+              fujiCenterX + w * 0.12,
+              snowBottomY + 12,
+            ),
+          );
     canvas.drawPath(snowPath, snowPaint);
 
     // 4. Dải mây truyền thống Kasumi mềm mại ngang sườn núi
@@ -221,7 +229,12 @@ class _FujiAndSunPainter extends CustomPainter {
     );
   }
 
-  void _drawJapaneseCloud(Canvas canvas, Offset pos, double width, double height) {
+  void _drawJapaneseCloud(
+    Canvas canvas,
+    Offset pos,
+    double width,
+    double height,
+  ) {
     final cloudPaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.55)
       ..style = PaintingStyle.fill;
@@ -284,7 +297,7 @@ class _JapaneseFolklorePainter extends CustomPainter {
 
     // 3. Lông mày hình chim hạc (tsuru) cong rậm rạp
     final inkPaint = Paint()
-      ..color = const Color(0xFF2C3E50).withValues(alpha: 0.45)
+      ..color = const Color(0xFF332E2A).withValues(alpha: 0.45)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.8
       ..strokeCap = StrokeCap.round;
@@ -357,7 +370,7 @@ class _JapaneseFolklorePainter extends CustomPainter {
   /// Vẽ bóng kiếm sĩ Samurai Nhật cổ hiên ngang
   void _drawSamuraiSilhouette(Canvas canvas, Offset base, double scale) {
     final samuraiPaint = Paint()
-      ..color = const Color(0xFF2C3E50).withValues(alpha: 0.20)
+      ..color = const Color(0xFF332E2A).withValues(alpha: 0.20)
       ..style = PaintingStyle.fill;
 
     final path = Path();
@@ -375,11 +388,13 @@ class _JapaneseFolklorePainter extends CustomPainter {
     path.close();
 
     // Vành nón Kabuto tròn
-    path.addOval(Rect.fromCenter(
-      center: Offset(x, headY),
-      width: s * 0.65,
-      height: s * 0.35,
-    ));
+    path.addOval(
+      Rect.fromCenter(
+        center: Offset(x, headY),
+        width: s * 0.65,
+        height: s * 0.35,
+      ),
+    );
 
     // 2. Thân giáp và áo choàng Haori
     final bodyPath = Path();
@@ -398,7 +413,7 @@ class _JapaneseFolklorePainter extends CustomPainter {
 
     // 3. Thanh kiếm Katana dài đeo bên hông chéo
     final swordPaint = Paint()
-      ..color = const Color(0xFF2C3E50).withValues(alpha: 0.24)
+      ..color = const Color(0xFF332E2A).withValues(alpha: 0.24)
       ..strokeWidth = 2.0
       ..strokeCap = StrokeCap.round;
     canvas.drawLine(
@@ -532,8 +547,10 @@ class _NatureElementsPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          const Color(0xFFD63031).withValues(alpha: opacity * 0.85), // Đỏ lá phong
-          const Color(0xFFE17055).withValues(alpha: opacity * 0.85), // Đỏ cam hổ phách
+          const Color(0xFFD63031)
+              .withValues(alpha: opacity * 0.85), // Đỏ lá phong
+          const Color(0xFFE17055)
+              .withValues(alpha: opacity * 0.85), // Đỏ cam hổ phách
         ],
       ).createShader(Rect.fromCircle(center: Offset.zero, radius: s));
 

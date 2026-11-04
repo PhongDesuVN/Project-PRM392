@@ -32,7 +32,8 @@ class _MockExamTabState extends State<MockExamTab> {
 
   int _selectedCategoryIndex = 0; // 0: Ngữ pháp, 1: Từ vựng, 2: JLPT
   String _level = _levels.first;
-  int _selectedStatusIndex = 0; // 0: Tất cả, 1: Chưa làm, 2: Đang làm, 3: Đã làm
+  int _selectedStatusIndex =
+      0; // 0: Tất cả, 1: Chưa làm, 2: Đang làm, 3: Đã làm
 
   List<ExamSummary> _tests = const [];
   bool _loading = true;
@@ -54,16 +55,18 @@ class _MockExamTabState extends State<MockExamTab> {
       var tests = await _service.fetchTests(level: level);
       if (widget.isGuest) {
         tests = tests
-            .map((t) => ExamSummary(
-                  id: t.id,
-                  title: t.title,
-                  level: t.level,
-                  type: t.type,
-                  durationMinutes: t.durationMinutes,
-                  totalQuestions: t.totalQuestions,
-                  attempts: 0,
-                  bestPercent: 0,
-                ))
+            .map(
+              (t) => ExamSummary(
+                id: t.id,
+                title: t.title,
+                level: t.level,
+                type: t.type,
+                durationMinutes: t.durationMinutes,
+                totalQuestions: t.totalQuestions,
+                attempts: 0,
+                bestPercent: 0,
+              ),
+            )
             .toList();
       }
       if (!mounted || level != _level) return;
@@ -134,7 +137,10 @@ class _MockExamTabState extends State<MockExamTab> {
                 MaterialPageRoute<void>(builder: (_) => const LoginPage()),
               );
             },
-            child: const Text('Đăng nhập', style: TextStyle(color: Colors.white)),
+            child: const Text(
+              'Đăng nhập',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -226,12 +232,12 @@ class _MockExamTabState extends State<MockExamTab> {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF1E242B),
+                  color: AppColors.ink,
                 ),
               ),
               InkWell(
                 onTap: _showLeaderboard,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(10),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,
@@ -254,7 +260,7 @@ class _MockExamTabState extends State<MockExamTab> {
                     children: [
                       Icon(
                         Icons.emoji_events_rounded,
-                        color: Color(0xFFF59E0B),
+                        color: AppColors.gold,
                         size: 18,
                       ),
                       SizedBox(width: 6),
@@ -263,7 +269,7 @@ class _MockExamTabState extends State<MockExamTab> {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF374151),
+                          color: AppColors.muted,
                         ),
                       ),
                     ],
@@ -299,7 +305,7 @@ class _MockExamTabState extends State<MockExamTab> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF1E242B),
+                  color: AppColors.ink,
                 ),
               ),
               InkWell(
@@ -311,7 +317,7 @@ class _MockExamTabState extends State<MockExamTab> {
                     style: TextStyle(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF6B7280),
+                      color: AppColors.primary,
                     ),
                   ),
                 ),
@@ -324,15 +330,8 @@ class _MockExamTabState extends State<MockExamTab> {
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-              ],
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.border),
             ),
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -345,7 +344,7 @@ class _MockExamTabState extends State<MockExamTab> {
                   onSelected: _selectStatus,
                 ),
                 const SizedBox(height: 16),
-                const Divider(height: 1, color: Color(0xFFF1F3F6)),
+                const Divider(height: 1, color: AppColors.border),
 
                 // Trạng thái đang tải / lỗi / rỗng / danh sách
                 if (_loading)
@@ -393,7 +392,7 @@ class _MockExamTabState extends State<MockExamTab> {
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: displayedTests.length,
                     separatorBuilder: (_, _) =>
-                        const Divider(height: 1, color: Color(0xFFF3F4F6)),
+                        const Divider(height: 1, color: AppColors.border),
                     itemBuilder: (context, index) {
                       final test = displayedTests[index];
                       // Đánh dấu VIP/Vương miện cho các đề sau để giống hình mẫu
@@ -431,7 +430,7 @@ class _CategorySegmentedBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFFE5E7EB),
+        color: AppColors.canvas,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -445,7 +444,9 @@ class _CategorySegmentedBar extends StatelessWidget {
                   duration: const Duration(milliseconds: 180),
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   decoration: BoxDecoration(
-                    color: selectedIndex == i ? Colors.white : Colors.transparent,
+                    color: selectedIndex == i
+                        ? Colors.white
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(9),
                     boxShadow: selectedIndex == i
                         ? [
@@ -466,8 +467,8 @@ class _CategorySegmentedBar extends StatelessWidget {
                           ? FontWeight.w700
                           : FontWeight.w500,
                       color: selectedIndex == i
-                          ? const Color(0xFF1E242B)
-                          : const Color(0xFF6B7280),
+                          ? AppColors.ink
+                          : AppColors.muted,
                     ),
                   ),
                 ),
@@ -505,9 +506,7 @@ class _LevelSelector extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 9),
                   decoration: BoxDecoration(
-                    color: lvl == selected
-                        ? Colors.white
-                        : const Color(0xFFEDF0F4),
+                    color: lvl == selected ? Colors.white : AppColors.canvas,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
                       color: lvl == selected
@@ -531,9 +530,7 @@ class _LevelSelector extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: lvl == selected
-                          ? AppColors.blue
-                          : const Color(0xFF4B5563),
+                      color: lvl == selected ? AppColors.blue : AppColors.muted,
                     ),
                   ),
                 ),
@@ -577,8 +574,8 @@ class _StatusFilterBar extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: selectedIndex == i
-                        ? const Color(0xFFE8F1FF)
-                        : const Color(0xFFF3F4F6),
+                        ? AppColors.primarySoft
+                        : AppColors.canvas,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -590,7 +587,7 @@ class _StatusFilterBar extends StatelessWidget {
                           : FontWeight.w500,
                       color: selectedIndex == i
                           ? AppColors.blue
-                          : const Color(0xFF4B5563),
+                          : AppColors.muted,
                     ),
                   ),
                 ),
@@ -635,7 +632,7 @@ class _ExamListItem extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 15.5,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF1E242B),
+                      color: AppColors.ink,
                     ),
                   ),
                   const SizedBox(height: 5),
@@ -675,10 +672,7 @@ class _ExamListItem extends StatelessWidget {
             if (done)
               Container(
                 margin: const EdgeInsets.only(right: 6),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 3,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: AppColors.blue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),

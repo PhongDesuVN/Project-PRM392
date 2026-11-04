@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/ui.dart';
+
 /// Modal Bottom Sheet "Chọn chế độ luyện tập" theo đúng giao diện Ảnh 1.
 /// Theo yêu cầu: Chỉ cho phép chọn Flashcard để luyện tập.
 class PracticeModeBottomSheet extends StatefulWidget {
@@ -75,7 +77,7 @@ class _PracticeModeBottomSheetState extends State<PracticeModeBottomSheet> {
               ),
               Switch.adaptive(
                 value: _spacedRepetitionEnabled,
-                activeTrackColor: const Color(0xFF1976D2),
+                activeTrackColor: AppColors.primary,
                 onChanged: (val) {
                   setState(() => _spacedRepetitionEnabled = val);
                 },
@@ -87,8 +89,8 @@ class _PracticeModeBottomSheetState extends State<PracticeModeBottomSheet> {
           // 1. Chế độ Flashcard (KÍCH HOẠT ĐẦY ĐỦ)
           _PracticeModeItem(
             iconData: Icons.style_rounded,
-            iconColor: const Color(0xFF1976D2),
-            iconBgColor: const Color(0xFFE3F2FD),
+            iconColor: AppColors.primary,
+            iconBgColor: AppColors.primarySoft,
             title: 'Flashcard',
             subtitle: 'Ôn lại từ vựng bằng flashcards',
             isEnabled: true,

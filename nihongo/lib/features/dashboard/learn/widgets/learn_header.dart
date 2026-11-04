@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/ui.dart';
+
 /// Header của màn hình Học tập: Tiêu đề "Học tập" và nút "Nâng cấp" giống ảnh mẫu
 class LearnHeader extends StatelessWidget {
   const LearnHeader({super.key, this.onUpgradeTap});
@@ -16,7 +18,7 @@ class LearnHeader extends StatelessWidget {
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF1E242B),
+            color: AppColors.ink,
           ),
         ),
         InkWell(
@@ -38,8 +40,8 @@ class LearnHeader extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFFFEF3C7),
-              borderRadius: BorderRadius.circular(20),
+              color: const Color(0xFFFFF3DF),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: const Row(
               mainAxisSize: MainAxisSize.min,
@@ -47,7 +49,7 @@ class LearnHeader extends StatelessWidget {
                 Icon(
                   Icons.workspace_premium_rounded,
                   size: 16,
-                  color: Color(0xFFD97706),
+                  color: AppColors.gold,
                 ),
                 SizedBox(width: 4),
                 Text(
@@ -55,7 +57,7 @@ class LearnHeader extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFFD97706),
+                    color: AppColors.gold,
                   ),
                 ),
               ],

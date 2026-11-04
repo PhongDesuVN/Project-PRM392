@@ -13,10 +13,7 @@ class LearnTopTabBar extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onTabChanged;
 
-  static const List<String> tabs = [
-    'Sổ tay của tôi',
-    'Thư viện',
-  ];
+  static const List<String> tabs = ['Sổ tay của tôi', 'Thư viện'];
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +46,7 @@ class _TabPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = AppColors.blue;
+    final activeColor = AppColors.primary;
 
     return Material(
       color: Colors.transparent,
@@ -63,25 +60,17 @@ class _TabPill extends StatelessWidget {
             color: isSelected ? activeColor : Colors.white,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: isSelected ? activeColor : const Color(0xFFE4E7EB),
+              color: isSelected ? activeColor : AppColors.border,
               width: 1,
             ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: activeColor.withValues(alpha: 0.25),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
+            boxShadow: null,
           ),
           child: Text(
             title,
             style: TextStyle(
               fontSize: 14.5,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              color: isSelected ? Colors.white : const Color(0xFF4A5568),
+              color: isSelected ? Colors.white : AppColors.muted,
             ),
           ),
         ),

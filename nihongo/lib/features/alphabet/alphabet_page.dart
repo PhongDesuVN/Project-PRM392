@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../shared/ui.dart';
 import 'models/alphabet_models.dart';
 import 'services/alphabet_service.dart';
 import 'widgets/alphabet_section_view.dart';
@@ -10,10 +11,7 @@ import 'widgets/alphabet_section_view.dart';
 /// 2. Dakuon & Handakuon (Biến âm & Bán biến âm)
 /// 3. Youon (Ảo âm / Âm ghép)
 class AlphabetPage extends StatefulWidget {
-  const AlphabetPage({
-    super.key,
-    this.script = AlphabetScript.hiragana,
-  });
+  const AlphabetPage({super.key, this.script = AlphabetScript.hiragana});
 
   final AlphabetScript script;
 
@@ -78,28 +76,28 @@ class _AlphabetPageState extends State<AlphabetPage>
         : 'Bảng chữ cái Hira';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F4F9),
+      backgroundColor: AppColors.canvas,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: Color(0xFF1E242B)),
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
           title,
           style: const TextStyle(
-            color: Color(0xFF1E242B),
+            color: AppColors.ink,
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
         ),
-        centerTitle: true,
+        centerTitle: false,
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 8),
-            child: Icon(Icons.settings_outlined, color: Color(0xFF718096)),
+            child: Icon(Icons.settings_outlined, color: AppColors.muted),
           ),
         ],
         bottom: PreferredSize(
@@ -108,13 +106,13 @@ class _AlphabetPageState extends State<AlphabetPage>
             decoration: const BoxDecoration(
               color: Colors.white,
               border: Border(
-                bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1),
+                bottom: BorderSide(color: AppColors.border, width: 1),
               ),
             ),
             child: TabBar(
               controller: _tabController,
-              labelColor: const Color(0xFF1976D2),
-              unselectedLabelColor: const Color(0xFF8F9CA9),
+              labelColor: AppColors.primary,
+              unselectedLabelColor: AppColors.muted,
               labelStyle: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
@@ -123,7 +121,7 @@ class _AlphabetPageState extends State<AlphabetPage>
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
               ),
-              indicatorColor: const Color(0xFF1976D2),
+              indicatorColor: AppColors.primary,
               indicatorWeight: 3,
               indicatorSize: TabBarIndicatorSize.tab,
               tabs: const [
@@ -139,7 +137,7 @@ class _AlphabetPageState extends State<AlphabetPage>
           ? const Center(
               child: CircularProgressIndicator(
                 strokeWidth: 2.5,
-                color: Color(0xFF1976D2),
+                color: AppColors.primary,
               ),
             )
           : TabBarView(

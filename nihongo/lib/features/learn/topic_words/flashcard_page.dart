@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../../shared/ui.dart';
 import 'models/topic_word_model.dart';
 import '../../dashboard/learn/notebook/services/notebook_service.dart';
 
@@ -229,7 +230,7 @@ class _FlashcardPageState extends State<FlashcardPage>
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1976D2),
+              backgroundColor: AppColors.primary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -266,7 +267,9 @@ class _FlashcardPageState extends State<FlashcardPage>
                 ..hideCurrentSnackBar()
                 ..showSnackBar(
                   const SnackBar(
-                    content: Text('Đã cập nhật tiến độ học vào "Sổ tay của tôi"!'),
+                    content: Text(
+                      'Đã cập nhật tiến độ học vào "Sổ tay của tôi"!',
+                    ),
                     duration: Duration(seconds: 2),
                     behavior: SnackBarBehavior.floating,
                   ),
@@ -378,7 +381,7 @@ class _FlashcardPageState extends State<FlashcardPage>
           child: LinearProgressIndicator(
             value: progress,
             backgroundColor: Colors.grey.shade300,
-            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF1976D2)),
+            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
             minHeight: 3.5,
           ),
         ),
@@ -403,7 +406,7 @@ class _FlashcardPageState extends State<FlashcardPage>
                     icon: _isAutoPlaying
                         ? Icons.pause_rounded
                         : Icons.play_arrow_rounded,
-                    color: _isAutoPlaying ? const Color(0xFF1976D2) : null,
+                    color: _isAutoPlaying ? AppColors.primary : null,
                     onTap: _toggleAutoPlay,
                   ),
                 ],
@@ -507,7 +510,7 @@ class _FlashcardPageState extends State<FlashcardPage>
   Widget _cardContainer({required Widget content}) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF1E88E5),
+        color: AppColors.primary,
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
@@ -572,7 +575,7 @@ class _FlashcardPageState extends State<FlashcardPage>
                   style: const TextStyle(
                     fontSize: 52,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF1565C0),
+                    color: AppColors.ink,
                     letterSpacing: 2,
                   ),
                   textAlign: TextAlign.center,
@@ -663,7 +666,7 @@ class _FlashcardPageState extends State<FlashcardPage>
               style: const TextStyle(
                 fontSize: 34,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1565C0),
+                color: AppColors.ink,
               ),
             ),
             const SizedBox(height: 6),
@@ -688,7 +691,7 @@ class _FlashcardPageState extends State<FlashcardPage>
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1976D2),
+                color: AppColors.primary,
               ),
             ),
             const SizedBox(height: 6),

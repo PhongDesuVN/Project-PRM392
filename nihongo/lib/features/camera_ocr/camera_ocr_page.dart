@@ -25,10 +25,7 @@ class CameraOcrResultData {
 
 /// Màn hình chụp ảnh và nhận diện văn bản tiếng Nhật bằng mô hình AI On-Device / Multimodal Vision LLM
 class CameraOcrPage extends StatefulWidget {
-  const CameraOcrPage({
-    super.key,
-    this.autoLaunchCamera = true,
-  });
+  const CameraOcrPage({super.key, this.autoLaunchCamera = true});
 
   final bool autoLaunchCamera;
 
@@ -156,7 +153,8 @@ class _CameraOcrPageState extends State<CameraOcrPage>
   }
 
   void _onSearchDictionary([String? customWord]) {
-    final query = customWord ??
+    final query =
+        customWord ??
         (_selectedWord?.isNotEmpty == true
             ? _selectedWord!
             : _textController.text.trim());
@@ -206,8 +204,10 @@ class _CameraOcrPageState extends State<CameraOcrPage>
     if (saved != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Đã lưu "${entry.entryWord}" vào "${targetNotebook.title}"!'),
-          backgroundColor: const Color(0xFF00B894),
+          content: Text(
+            'Đã lưu "${entry.entryWord}" vào "${targetNotebook.title}"!',
+          ),
+          backgroundColor: AppColors.primary,
           duration: const Duration(seconds: 2),
         ),
       );
@@ -216,24 +216,24 @@ class _CameraOcrPageState extends State<CameraOcrPage>
 
   @override
   Widget build(BuildContext context) {
-    final hasContent = _textController.text.trim().isNotEmpty ||
-        _dictionaryEntries.isNotEmpty;
+    final hasContent =
+        _textController.text.trim().isNotEmpty || _dictionaryEntries.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.canvas,
       appBar: AppBar(
         title: const Text(
           'Nihon AI Camera',
           style: TextStyle(
-            color: Color(0xFF1E242B),
+            color: AppColors.ink,
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.surface,
         elevation: 0.5,
-        iconTheme: const IconThemeData(color: Color(0xFF1E242B)),
+        iconTheme: const IconThemeData(color: AppColors.ink),
         actions: [
           IconButton(
             icon: const Icon(Icons.key_rounded, size: 20),
@@ -269,7 +269,7 @@ class _CameraOcrPageState extends State<CameraOcrPage>
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E242B),
+                  color: AppColors.ink,
                 ),
               ),
               const SizedBox(height: 8),
@@ -280,7 +280,7 @@ class _CameraOcrPageState extends State<CameraOcrPage>
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13,
-                  color: Color(0xFF64748B),
+                  color: AppColors.muted,
                   height: 1.5,
                 ),
               ),
@@ -322,7 +322,7 @@ class _CameraOcrPageState extends State<CameraOcrPage>
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: const Color(0xFFE2E8F0),
+              color: AppColors.canvas,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -334,7 +334,9 @@ class _CameraOcrPageState extends State<CameraOcrPage>
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 9),
                       decoration: BoxDecoration(
-                        color: _activeTabIndex == 0 ? Colors.white : Colors.transparent,
+                        color: _activeTabIndex == 0
+                            ? Colors.white
+                            : Colors.transparent,
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: _activeTabIndex == 0
                             ? const [
@@ -342,7 +344,7 @@ class _CameraOcrPageState extends State<CameraOcrPage>
                                   color: Color(0x14000000),
                                   blurRadius: 4,
                                   offset: Offset(0, 2),
-                                )
+                                ),
                               ]
                             : null,
                       ),
@@ -353,15 +355,21 @@ class _CameraOcrPageState extends State<CameraOcrPage>
                           Icon(
                             Icons.auto_awesome_rounded,
                             size: 16,
-                            color: _activeTabIndex == 0 ? AppColors.blue : const Color(0xFF64748B),
+                            color: _activeTabIndex == 0
+                                ? AppColors.primary
+                                : AppColors.muted,
                           ),
                           const SizedBox(width: 6),
                           Text(
                             'Từ điển AI (${_dictionaryEntries.length})',
                             style: TextStyle(
                               fontSize: 14,
-                              fontWeight: _activeTabIndex == 0 ? FontWeight.bold : FontWeight.w600,
-                              color: _activeTabIndex == 0 ? AppColors.blue : const Color(0xFF64748B),
+                              fontWeight: _activeTabIndex == 0
+                                  ? FontWeight.bold
+                                  : FontWeight.w600,
+                              color: _activeTabIndex == 0
+                                  ? AppColors.primary
+                                  : AppColors.muted,
                             ),
                           ),
                         ],
@@ -376,7 +384,9 @@ class _CameraOcrPageState extends State<CameraOcrPage>
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 9),
                       decoration: BoxDecoration(
-                        color: _activeTabIndex == 1 ? Colors.white : Colors.transparent,
+                        color: _activeTabIndex == 1
+                            ? Colors.white
+                            : Colors.transparent,
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: _activeTabIndex == 1
                             ? const [
@@ -384,7 +394,7 @@ class _CameraOcrPageState extends State<CameraOcrPage>
                                   color: Color(0x14000000),
                                   blurRadius: 4,
                                   offset: Offset(0, 2),
-                                )
+                                ),
                               ]
                             : null,
                       ),
@@ -395,15 +405,21 @@ class _CameraOcrPageState extends State<CameraOcrPage>
                           Icon(
                             Icons.description_outlined,
                             size: 16,
-                            color: _activeTabIndex == 1 ? AppColors.blue : const Color(0xFF64748B),
+                            color: _activeTabIndex == 1
+                                ? AppColors.primary
+                                : AppColors.muted,
                           ),
                           const SizedBox(width: 6),
                           Text(
                             'Văn bản thô (OCR)',
                             style: TextStyle(
                               fontSize: 14,
-                              fontWeight: _activeTabIndex == 1 ? FontWeight.bold : FontWeight.w600,
-                              color: _activeTabIndex == 1 ? AppColors.blue : const Color(0xFF64748B),
+                              fontWeight: _activeTabIndex == 1
+                                  ? FontWeight.bold
+                                  : FontWeight.w600,
+                              color: _activeTabIndex == 1
+                                  ? AppColors.primary
+                                  : AppColors.muted,
                             ),
                           ),
                         ],
@@ -424,16 +440,20 @@ class _CameraOcrPageState extends State<CameraOcrPage>
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  border: Border.all(color: AppColors.border),
                 ),
                 child: const Column(
                   children: [
-                    Icon(Icons.search_off_rounded, size: 40, color: Colors.grey),
+                    Icon(
+                      Icons.search_off_rounded,
+                      size: 40,
+                      color: Colors.grey,
+                    ),
                     SizedBox(height: 10),
                     Text(
                       'Chưa trích xuất được mục từ điển hoàn chỉnh.\nVui lòng bấm qua tab "Văn bản thô (OCR)" để xem nội dung quét được.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
+                      style: TextStyle(color: AppColors.muted, fontSize: 14),
                     ),
                   ],
                 ),
@@ -471,9 +491,12 @@ class _CameraOcrPageState extends State<CameraOcrPage>
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: const Color(0xFFEFF6FF),
+                color: AppColors.primarySoft,
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFBFDBFE), width: 2),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.25),
+                  width: 1.5,
+                ),
               ),
               child: const Icon(
                 Icons.camera_alt_rounded,
@@ -487,21 +510,28 @@ class _CameraOcrPageState extends State<CameraOcrPage>
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1E242B),
+                color: AppColors.ink,
               ),
             ),
             const SizedBox(height: 8),
             const Text(
               'Tự động bóc tách từ khóa chính, phiên âm, từ loại, các tầng nghĩa tiếng Việt và câu ví dụ từ trang sách hoặc từ điển.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14.5, color: Color(0xFF64748B), height: 1.4),
+              style: TextStyle(
+                fontSize: 14.5,
+                color: AppColors.muted,
+                height: 1.4,
+              ),
             ),
             const SizedBox(height: 28),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.blue,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 14,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -517,9 +547,12 @@ class _CameraOcrPageState extends State<CameraOcrPage>
             const SizedBox(height: 12),
             OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF1E242B),
-                side: const BorderSide(color: Color(0xFFCBD5E1)),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 13),
+                foregroundColor: AppColors.ink,
+                side: const BorderSide(color: AppColors.border),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 13,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -562,15 +595,24 @@ class _CameraOcrPageState extends State<CameraOcrPage>
           children: [
             const Text(
               'Nhập Google Gemini API Key để kích hoạt tính năng Multimodal Vision trích xuất Strict JSON nâng cao (hoặc để trống để sử dụng On-Device AI mặc định):',
-              style: TextStyle(fontSize: 13.5, color: Color(0xFF475569), height: 1.4),
+              style: TextStyle(
+                fontSize: 13.5,
+                color: Color(0xFF475569),
+                height: 1.4,
+              ),
             ),
             const SizedBox(height: 14),
             TextField(
               controller: controller,
               decoration: InputDecoration(
                 hintText: 'AIzaSy...',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
               ),
             ),
           ],
@@ -583,7 +625,9 @@ class _CameraOcrPageState extends State<CameraOcrPage>
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.blue,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             onPressed: () async {
               await _aiExtractor.saveCustomApiKey(controller.text.trim());

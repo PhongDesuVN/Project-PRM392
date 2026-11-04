@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../../shared/ui.dart';
 import '../models/alphabet_models.dart';
 
 /// Widget hiển thị 1 ô ký tự trong bảng chữ cái (hoặc ô trống)
 class AlphabetCell extends StatelessWidget {
-  const AlphabetCell({
-    super.key,
-    required this.item,
-    this.onTap,
-  });
+  const AlphabetCell({super.key, required this.item, this.onTap});
 
   final AlphabetItem? item;
   final VoidCallback? onTap;
@@ -23,11 +20,8 @@ class AlphabetCell extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: const Color(0xFFE5E7EB),
-          width: 1,
-        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border, width: 1),
         boxShadow: const [
           BoxShadow(
             color: Color(0x08000000),
@@ -39,7 +33,7 @@ class AlphabetCell extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
@@ -51,7 +45,7 @@ class AlphabetCell extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF1E242B),
+                    color: AppColors.ink,
                     height: 1.1,
                   ),
                 ),
@@ -61,7 +55,7 @@ class AlphabetCell extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF8C98A4),
+                    color: AppColors.muted,
                     height: 1,
                   ),
                 ),

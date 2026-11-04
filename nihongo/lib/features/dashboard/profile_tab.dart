@@ -19,7 +19,7 @@ class ProfileTab extends StatelessWidget {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         title: Row(
           children: const [
             Icon(Icons.logout_rounded, color: AppColors.googleRed, size: 24),
@@ -87,7 +87,7 @@ class ProfileTab extends StatelessWidget {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -147,7 +147,9 @@ class ProfileTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final name = fullName?.trim();
-    final displayName = name != null && name.isNotEmpty ? name : 'Học viên Nihongo';
+    final displayName = name != null && name.isNotEmpty
+        ? name
+        : 'Học viên Nihongo';
     final initial = displayName.characters.first.toUpperCase();
 
     return ListView(
@@ -159,26 +161,19 @@ class ProfileTab extends StatelessWidget {
           child: Text(
             'Tài khoản',
             style: TextStyle(
-              color: AppColors.blue,
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
+              color: AppColors.ink,
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ),
         // Card thông tin cá nhân
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 26),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.95),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.blue.withValues(alpha: 0.08),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.border),
           ),
           child: Column(
             children: [
@@ -192,7 +187,7 @@ class ProfileTab extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF4F96E8), Color(0xFF8EC5FC)],
+                        colors: [AppColors.primary, Color(0xFF43A497)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -289,7 +284,7 @@ class ProfileTab extends StatelessWidget {
             ),
             _buildMenuItem(
               icon: Icons.analytics_outlined,
-              iconColor: const Color(0xFF6C5CE7),
+              iconColor: AppColors.accent,
               title: 'Lịch sử làm bài thi thử',
               subtitle: 'Xem lại điểm số các đề thi',
               onTap: () => _showNotice(context, 'Mở lịch sử thi thử JLPT'),
@@ -304,7 +299,7 @@ class ProfileTab extends StatelessWidget {
           children: [
             _buildMenuItem(
               icon: Icons.info_outline_rounded,
-              iconColor: const Color(0xFF636E72),
+              iconColor: AppColors.muted,
               title: 'Về ứng dụng Nihongo',
               subtitle: 'Thông tin và phiên bản',
               trailing: const Text(
@@ -344,8 +339,8 @@ class ProfileTab extends StatelessWidget {
             ),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.error,
-              backgroundColor: const Color(0xFFFFF5F5),
-              side: const BorderSide(color: Color(0xFFFFD5D5), width: 1.2),
+              backgroundColor: const Color(0xFFFFF5F3),
+              side: BorderSide(color: AppColors.accent.withValues(alpha: 0.3)),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
