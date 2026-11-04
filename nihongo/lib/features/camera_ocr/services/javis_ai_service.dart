@@ -1,19 +1,19 @@
 import 'dart:convert';
 import 'dart:typed_data';
+
 import 'package:google_generative_ai/google_generative_ai.dart';
+
 import '../models/japanese_analysis_model.dart';
 
 class JavisAiService {
   static const String geminiApiKey =
-      'AQ.Ab8RN6K7xHxUy3Hxy-MRHZnlCRFnuDeCk9H3B3Xbg6GVjEV4Pg';
+      'AQ.Ab8RN6JA7NutL1YyDncgPKbsPTIeu2qYvfwtcPhdORedwg8rBQ';
 
   /// Danh sách các model Flash tối ưu theo thứ tự ưu tiên
   static const List<String> candidateModels = [
-    'gemini-3.5-flash',
+    'gemini-flash-lite-latest',
     'gemini-flash-latest',
     'gemini-3.8-flash',
-    'gemini-2.5-flash',
-    'gemini-1.5-flash',
   ];
 
   static final JavisAiService instance = JavisAiService._internal();
@@ -123,7 +123,9 @@ Chỉ trả về duy nhất chuỗi JSON hợp lệ theo cấu trúc mẫu sau (
 
         final decoded = jsonDecode(cleanJson);
         if (decoded is! Map<String, dynamic>) {
-          throw Exception('Dữ liệu phân tích trả về không đúng định dạng JSON.');
+          throw Exception(
+            'Dữ liệu phân tích trả về không đúng định dạng JSON.',
+          );
         }
 
         // Lưu lại model thành công cho các lần gọi tiếp theo

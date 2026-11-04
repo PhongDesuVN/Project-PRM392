@@ -1,12 +1,12 @@
 -- =============================================================================
 -- THI THU: de luyen tap tu vung / ngu phap va de thi thu theo cau truc JLPT
--- File sinh tu script; chay lai se ghi de du lieu mau (id 1..27) va xoa lan thi cua cac de nay.
+-- File sinh tu script; chay lai se ghi de du lieu mau (id 1..33) va xoa lan thi cua cac de nay.
 -- Can chay database.sql truoc (bang jlpt_tests / jlpt_questions / jlpt_options).
 -- =============================================================================
 
 USE PRM;
 
-DELETE FROM jlpt_tests WHERE id <= 27;
+DELETE FROM jlpt_tests WHERE id <= 33;
 
 INSERT INTO jlpt_tests (id, title, level, test_type, duration_minutes, total_questions)
 VALUES (1, 'Test từ vựng N5 - Đề 1', 'N5', 'vocabulary', 10, 8);
