@@ -80,7 +80,9 @@ class _JavisCameraScreenState extends State<JavisCameraScreen> {
     try {
       final XFile? file = await _picker.pickImage(
         source: source,
-        imageQuality: 80, // Nén ảnh 80% theo yêu cầu
+        maxWidth: 1280,   // Giới hạn độ phân giải chuẩn để tăng tốc tải & phân tích AI
+        maxHeight: 1280,
+        imageQuality: 80, // Nén ảnh 80% tối ưu tốc độ
       );
 
       if (file == null) return;
@@ -101,6 +103,55 @@ class _JavisCameraScreenState extends State<JavisCameraScreen> {
 
       if (!mounted) return;
 
+      setState(() {
+        _isLoading = false;
+        _analysisResult = result;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.white, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _errorMessage ?? 'Đã xảy ra lỗi khi phân tích ảnh.',
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  /// Thử lại phân tích ảnh hiện tại mà không cần chụp lại
+  Future<void> _retryAnalysis() async {
+    if (_selectedImageBytes == null) return;
+    try {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+        _analysisResult = null;
+      });
+
+      final mimeType = _resolveMimeType(_selectedImageName ?? '', null);
+      final result = await _aiService.analyzeJapaneseImage(
+        _selectedImageBytes!,
+        mimeType,
+      );
+
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
         _analysisResult = result;
@@ -1116,17 +1167,37 @@ class _JavisCameraScreenState extends State<JavisCameraScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () => _pickAndAnalyze(ImageSource.camera),
-              icon: const Icon(Icons.refresh, size: 18),
-              label: const Text('Chụp lại ảnh khác'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (_selectedImageBytes != null) ...[
+                  ElevatedButton.icon(
+                    onPressed: _retryAnalysis,
+                    icon: const Icon(Icons.refresh, size: 18),
+                    label: const Text('Thử lại'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                OutlinedButton.icon(
+                  onPressed: () => _pickAndAnalyze(ImageSource.camera),
+                  icon: const Icon(Icons.camera_alt_outlined, size: 18),
+                  label: const Text('Chụp lại ảnh khác'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.ink,
+                    side: const BorderSide(color: AppColors.border),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ],
         ),

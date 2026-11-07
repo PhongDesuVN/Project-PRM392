@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../../core/tts_service.dart';
 import '../../../shared/ui.dart';
 import 'models/topic_word_model.dart';
 import '../../dashboard/learn/notebook/services/notebook_service.dart';
@@ -57,6 +58,7 @@ class _FlashcardPageState extends State<FlashcardPage>
 
   @override
   void dispose() {
+    AppTtsService.instance.stop();
     _flipController.dispose();
     super.dispose();
   }
@@ -153,21 +155,11 @@ class _FlashcardPageState extends State<FlashcardPage>
   }
 
   void _playAudioFeedback(String text) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.volume_up, color: Colors.white, size: 20),
-              const SizedBox(width: 8),
-              Text('Phát âm: $text'),
-            ],
-          ),
-          duration: const Duration(milliseconds: 900),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+    AppTtsService.instance.speak(
+      text,
+      lang: 'ja',
+      context: context,
+    );
   }
 
   void _showCompletionDialog() {

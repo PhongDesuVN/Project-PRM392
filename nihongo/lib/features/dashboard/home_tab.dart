@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'banner_data.dart';
@@ -443,8 +444,9 @@ class _HomeTabState extends State<HomeTab> {
         ListenableBuilder(
           listenable: SearchHistoryService.instance,
           builder: (context, _) {
-            final keywords =
-                SearchHistoryService.instance.recentKeywords.take(10).toList();
+            final keywords = SearchHistoryService.instance.recentKeywords
+                .take(10)
+                .toList();
             if (keywords.isEmpty) return const SizedBox.shrink();
 
             return Column(
@@ -1117,7 +1119,7 @@ class _DashboardBannerCarouselState extends State<_DashboardBannerCarousel> {
       _pageController.animateToPage(
         nextPage,
         duration: const Duration(milliseconds: 550),
-        curve: Curves.easeInOutCubic,
+        curve: Curves.easeInOutCubic, //dg cong chuyển động
       );
     });
   }
@@ -1177,6 +1179,7 @@ class _DashboardBannerCarouselState extends State<_DashboardBannerCarousel> {
                       children: List.generate(_banners.length, (index) {
                         final isSelected = _currentPage == index;
                         return AnimatedContainer(
+                          // hiệu ứng chấm tròn
                           duration: const Duration(milliseconds: 250),
                           margin: const EdgeInsets.symmetric(horizontal: 3),
                           width: isSelected ? 18 : 6,

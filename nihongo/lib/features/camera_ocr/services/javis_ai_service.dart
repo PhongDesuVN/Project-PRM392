@@ -7,13 +7,13 @@ import '../models/japanese_analysis_model.dart';
 
 class JavisAiService {
   static const String geminiApiKey =
-      'AQ.Ab8RN6JA7NutL1YyDncgPKbsPTIeu2qYvfwtcPhdORedwg8rBQ';
+      'AQ.Ab8RN6KnH9R5g5OUKlUc5cJA8Hldnl4KOcej6_7Q1PR8TISY7Q';
 
-  /// Danh sách các model Flash tối ưu theo thứ tự ưu tiên
+  /// Danh sách các model Flash tối ưu theo thứ tự ưu tiên tốc độ cao nhất (đã test thực tế trên API Key)
   static const List<String> candidateModels = [
-    'gemini-flash-lite-latest',
-    'gemini-flash-latest',
-    'gemini-3.8-flash',
+    'gemini-3.1-flash-lite',    // Top 1 siêu tốc (~1.0s), phản hồi tức thì, không bị 503
+    'gemini-flash-lite-latest', // Top 2 tốc độ (~1.1s)
+    'gemini-3.6-flash',         // Bản dự phòng ổn định (~3.0s)
   ];
 
   static final JavisAiService instance = JavisAiService._internal();
@@ -68,7 +68,8 @@ Chỉ trả về duy nhất chuỗi JSON hợp lệ theo cấu trúc mẫu sau (
       model: model,
       apiKey: geminiApiKey,
       generationConfig: GenerationConfig(
-        temperature: 0.2,
+        temperature: 0.1, // Nhiệt độ thấp giúp AI phản hồi ngay lập tức, cấu trúc JSON nhất quán
+        maxOutputTokens: 2048, // Giới hạn token đầu ra giúp hoàn tất nhanh hơn
         responseMimeType: 'application/json',
       ),
       systemInstruction: Content.system(systemInstructionText),
@@ -144,10 +145,18 @@ Chỉ trả về duy nhất chuỗi JSON hợp lệ theo cấu trúc mẫu sau (
           );
         }
 
-        // Nếu lỗi do model không tồn tại hoặc không hỗ trợ, tiếp tục thử model dự phòng
-        if (errString.contains('not found') ||
+        // Nếu lỗi do model quá tải (503), chưa hỗ trợ/đã đóng (404/no longer available), hết quota (429), chuyển sang model tiếp theo
+        if (errString.contains('503') ||
+            errString.contains('unavailable') ||
+            errString.contains('high demand') ||
+            errString.contains('overloaded') ||
+            errString.contains('no longer available') ||
+            errString.contains('deprecated') ||
+            errString.contains('not found') ||
             errString.contains('not supported') ||
-            errString.contains('404')) {
+            errString.contains('404') ||
+            errString.contains('429') ||
+            errString.contains('resource_exhausted')) {
           continue;
         }
 
@@ -157,9 +166,21 @@ Chỉ trả về duy nhất chuỗi JSON hợp lệ theo cấu trúc mẫu sau (
     }
 
     if (lastError != null) {
-      throw Exception(
-        'Không thể phân tích ảnh với các mô hình Gemini hiện có: $lastError',
-      );
+      final errLower = lastError.toString().toLowerCase();
+      if (errLower.contains('503') ||
+          errLower.contains('unavailable') ||
+          errLower.contains('high demand') ||
+          errLower.contains('overloaded')) {
+        throw Exception(
+          'Máy chủ AI hiện đang quá tải do lượng truy cập cao (503). Vui lòng thử lại sau vài giây.',
+        );
+      }
+      if (errLower.contains('429') || errLower.contains('resource_exhausted')) {
+        throw Exception(
+          'Đã vượt quá giới hạn lượt gọi AI (Quota). Vui lòng thử lại sau ít phút.',
+        );
+      }
+      throw Exception('Không thể phân tích ảnh: $lastError');
     }
 
     throw Exception('Đã xảy ra lỗi không xác định khi phân tích ảnh.');

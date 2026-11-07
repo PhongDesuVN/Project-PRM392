@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/tts_service.dart';
 import '../../../shared/ui.dart';
 import 'flashcard_page.dart';
 import 'models/topic_word_model.dart';
@@ -43,6 +44,7 @@ class _TopicWordsPageState extends State<TopicWordsPage> {
 
   @override
   void dispose() {
+    AppTtsService.instance.stop();
     _searchController.dispose();
     _service.dispose();
     super.dispose();
@@ -113,21 +115,11 @@ class _TopicWordsPageState extends State<TopicWordsPage> {
   }
 
   void _playAudio(String text) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.volume_up, color: Colors.white, size: 20),
-              const SizedBox(width: 8),
-              Text('Phát âm: $text'),
-            ],
-          ),
-          duration: const Duration(milliseconds: 800),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+    AppTtsService.instance.speak(
+      text,
+      lang: 'ja',
+      context: context,
+    );
   }
 
   @override

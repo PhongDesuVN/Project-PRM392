@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/tts_service.dart';
 import '../../../../shared/ui.dart';
 import '../../../learn/topic_words/flashcard_page.dart';
 import 'models/notebook_item.dart';
@@ -35,6 +36,7 @@ class _NotebookDetailPageState extends State<NotebookDetailPage> {
 
   @override
   void dispose() {
+    AppTtsService.instance.stop();
     _searchController.dispose();
     super.dispose();
   }
@@ -111,21 +113,11 @@ class _NotebookDetailPageState extends State<NotebookDetailPage> {
   }
 
   void _playAudio(String text) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.volume_up, color: Colors.white, size: 20),
-              const SizedBox(width: 8),
-              Text('Phát âm: $text'),
-            ],
-          ),
-          duration: const Duration(milliseconds: 700),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+    AppTtsService.instance.speak(
+      text,
+      lang: 'ja',
+      context: context,
+    );
   }
 
   void _shuffleWords() {

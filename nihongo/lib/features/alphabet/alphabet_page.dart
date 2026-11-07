@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/tts_service.dart';
 import '../../shared/ui.dart';
 import 'models/alphabet_models.dart';
 import 'services/alphabet_service.dart';
@@ -37,6 +38,7 @@ class _AlphabetPageState extends State<AlphabetPage>
 
   @override
   void dispose() {
+    AppTtsService.instance.stop();
     _tabController.dispose();
     _alphabetService.dispose();
     super.dispose();
@@ -52,21 +54,7 @@ class _AlphabetPageState extends State<AlphabetPage>
   }
 
   void _showCharacterDetails(AlphabetItem item) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          duration: const Duration(seconds: 1),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          content: Text(
-            'Ký tự: ${item.character}  •  Phiên âm: ${item.romaji}',
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-        ),
-      );
+    AppTtsService.instance.speak(item.character, lang: 'ja', context: context);
   }
 
   @override

@@ -12,9 +12,9 @@ class TranslationService {
   static const _storage = FlutterSecureStorage();
 
   static const List<String> _candidateModels = [
+    'gemini-3.1-flash-lite',
     'gemini-flash-lite-latest',
-    'gemini-flash-latest',
-    'gemini-3.8-flash',
+    'gemini-3.6-flash',
   ];
 
   Future<String> translate({
@@ -50,7 +50,8 @@ $text
           model: modelName,
           apiKey: apiKey,
           generationConfig: GenerationConfig(
-            temperature: 0.2,
+            temperature: 0.1,
+            maxOutputTokens: 2048,
           ),
         );
 
@@ -108,16 +109,25 @@ $text
           );
         }
 
-        // Nếu model 503 (quá tải) hoặc 404 (chưa hỗ trợ), tự động chuyển sang model tiếp theo
+        // Nếu model 503 (quá tải), no longer available, deprecated hoặc 404, tự động chuyển sang model tiếp theo
         continue;
       }
     }
 
     if (lastError != null) {
       final msg = lastError.toString();
-      if (msg.contains('SocketException') || msg.contains('Failed host lookup')) {
+      final errLower = msg.toLowerCase();
+      if (errLower.contains('socketexception') || errLower.contains('failed host lookup')) {
         throw const TranslationException(
           'Không kết nối được Gemini. Vui lòng kiểm tra Internet.',
+        );
+      }
+      if (errLower.contains('503') ||
+          errLower.contains('unavailable') ||
+          errLower.contains('high demand') ||
+          errLower.contains('overloaded')) {
+        throw const TranslationException(
+          'Máy chủ Gemini đang quá tải (503). Vui lòng thử lại sau vài giây.',
         );
       }
       throw TranslationException('Lỗi dịch Gemini: $lastError');

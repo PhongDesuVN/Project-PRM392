@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/tts_service.dart';
 import '../../../learn/topic_words/flashcard_page.dart';
 import 'services/notebook_service.dart';
 
@@ -19,21 +20,11 @@ class NotebookWordsListPage extends StatelessWidget {
   final int? notebookId;
 
   void _playAudio(BuildContext context, String text) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.volume_up, color: Colors.white, size: 20),
-              const SizedBox(width: 8),
-              Text('Phát âm: $text'),
-            ],
-          ),
-          duration: const Duration(milliseconds: 800),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+    AppTtsService.instance.speak(
+      text,
+      lang: 'ja',
+      context: context,
+    );
   }
 
   @override

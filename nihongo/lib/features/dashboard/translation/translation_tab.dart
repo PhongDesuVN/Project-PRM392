@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../core/tts_service.dart';
 import '../../../shared/ui.dart';
 import '../shared/dashboard_tool_widgets.dart';
 import 'translation_service.dart';
@@ -35,6 +36,7 @@ class _TranslationTabState extends State<TranslationTab> {
 
   @override
   void dispose() {
+    AppTtsService.instance.stop();
     _textController.dispose();
     _translationService.dispose();
     super.dispose();
@@ -90,7 +92,11 @@ class _TranslationTabState extends State<TranslationTab> {
   void _swapLanguages() {
     setState(() {
       _japaneseToVietnamese = !_japaneseToVietnamese;
-      _translatedText = null;
+      if (_translatedText != null && _translatedText!.trim().isNotEmpty) {
+        final prevInput = _textController.text;
+        _textController.text = _translatedText!;
+        _translatedText = prevInput.trim().isNotEmpty ? prevInput : null;
+      }
     });
   }
 
@@ -108,9 +114,12 @@ class _TranslationTabState extends State<TranslationTab> {
     if (mounted) _showMessage('Đã sao chép bản dịch.');
   }
 
-  void _speakText(String text, String lang) {
-    if (text.trim().isEmpty) return;
-    _showMessage('Phát âm thanh: $text');
+  Future<void> _speakText(String text, String lang) async {
+    await AppTtsService.instance.speak(
+      text,
+      lang: lang,
+      context: context,
+    );
   }
 
   @override
@@ -333,14 +342,12 @@ class _TranslationTabState extends State<TranslationTab> {
                             size: 22,
                             color: _translatedText != null
                                 ? const Color(0xFF64748B)
-                                : const Color(0xFFCBD5E1),
+                                : const Color(0xFF94A3B8),
                           ),
-                          onPressed: _translatedText != null
-                              ? () => _speakText(
-                                  _translatedText!,
-                                  _japaneseToVietnamese ? 'vi' : 'ja',
-                                )
-                              : null,
+                          onPressed: () => _speakText(
+                            _translatedText ?? '',
+                            _japaneseToVietnamese ? 'vi' : 'ja',
+                          ),
                         ),
                         const SizedBox(width: 6),
                         IconButton(
