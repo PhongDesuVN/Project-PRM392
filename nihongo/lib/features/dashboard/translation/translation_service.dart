@@ -24,14 +24,6 @@ class TranslationService {
     void Function(String partialResult)? onChunk,
     void Function(String message)? onStatus,
   }) async {
-    // Luôn ưu tiên dùng key mới nhất từ JavisAiService
-    final apiKey = JavisAiService.geminiApiKey;
-
-    // Cập nhật đè vào storage để xóa bỏ bất kỳ key cũ nào bị kẹt trên máy
-    try {
-      unawaited(_storage.write(key: _apiKeyStorageKey, value: apiKey));
-    } catch (_) {}
-
     onStatus?.call('Đang kết nối Gemini...');
     final prompt = '''
 Bạn là chuyên gia dịch thuật chuyên nghiệp.
@@ -43,74 +35,77 @@ $text
 
     Object? lastError;
 
-    // Thử lần lượt các model tối ưu (gemini-flash-lite-latest -> gemini-flash-latest -> gemini-3.8-flash)
-    for (final modelName in _candidateModels) {
-      try {
-        final model = GenerativeModel(
-          model: modelName,
-          apiKey: apiKey,
-          generationConfig: GenerationConfig(
-            temperature: 0.1,
-            maxOutputTokens: 2048,
-          ),
-        );
+    // Xoay vòng tự động qua danh sách các API Key dự phòng (Key Pool)
+    for (final apiKey in JavisAiService.orderedApiKeys) {
+      // Thử lần lượt các model tối ưu trên Key hiện tại
+      for (final modelName in _candidateModels) {
+        try {
+          final model = GenerativeModel(
+            model: modelName,
+            apiKey: apiKey,
+            generationConfig: GenerationConfig(
+              temperature: 0.1,
+              maxOutputTokens: 2048,
+            ),
+          );
 
-        onStatus?.call('Gemini đang dịch...');
+          onStatus?.call('Gemini đang dịch...');
 
-        final responseStream = model.generateContentStream([
-          Content.text(prompt),
-        ]);
+          final responseStream = model.generateContentStream([
+            Content.text(prompt),
+          ]);
 
-        final fullText = StringBuffer();
+          final fullText = StringBuffer();
 
-        await for (final chunk in responseStream) {
-          final chunkText = chunk.text;
-          if (chunkText != null && chunkText.isNotEmpty) {
-            fullText.write(chunkText);
-            onChunk?.call(fullText.toString());
+          await for (final chunk in responseStream) {
+            final chunkText = chunk.text;
+            if (chunkText != null && chunkText.isNotEmpty) {
+              fullText.write(chunkText);
+              onChunk?.call(fullText.toString());
+            }
           }
-        }
 
-        final result = fullText.toString().trim();
-        if (result.isNotEmpty) {
-          onChunk?.call(result);
-          return result;
-        }
+          final result = fullText.toString().trim();
+          if (result.isNotEmpty) {
+            JavisAiService.markKeyWorking(apiKey);
+            try {
+              unawaited(_storage.write(key: _apiKeyStorageKey, value: apiKey));
+            } catch (_) {}
+            onChunk?.call(result);
+            return result;
+          }
 
-        // Nếu stream không có text, thử generateContent thường
-        final singleResponse = await model.generateContent([
-          Content.text(prompt),
-        ]);
-        final singleText = singleResponse.text?.trim() ?? '';
-        if (singleText.isNotEmpty) {
-          onChunk?.call(singleText);
-          return singleText;
-        }
-      } catch (e) {
-        lastError = e;
-        final errorStr = e.toString().toLowerCase();
+          // Nếu stream không có text, thử generateContent thường
+          final singleResponse = await model.generateContent([
+            Content.text(prompt),
+          ]);
+          final singleText = singleResponse.text?.trim() ?? '';
+          if (singleText.isNotEmpty) {
+            JavisAiService.markKeyWorking(apiKey);
+            try {
+              unawaited(_storage.write(key: _apiKeyStorageKey, value: apiKey));
+            } catch (_) {}
+            onChunk?.call(singleText);
+            return singleText;
+          }
+        } catch (e) {
+          lastError = e;
+          final errorStr = e.toString().toLowerCase();
 
-        // Nếu lỗi 401/403 (từ chối API key)
-        if (errorStr.contains('401') ||
-            errorStr.contains('403') ||
-            errorStr.contains('api_key_invalid') ||
-            errorStr.contains('permission_denied')) {
-          throw const TranslationException(
-            'Gemini từ chối API key. Hãy kiểm tra lại API Key trong cài đặt.',
-          );
-        }
+          // Nếu Key hiện tại bị từ chối (401/403) hoặc hết Quota (429), nhảy ngay sang API Key tiếp theo!
+          if (errorStr.contains('401') ||
+              errorStr.contains('403') ||
+              errorStr.contains('api_key_invalid') ||
+              errorStr.contains('permission_denied') ||
+              errorStr.contains('429') ||
+              errorStr.contains('resource_exhausted') ||
+              errorStr.contains('quota')) {
+            break; // Thoát vòng lặp model để chuyển ngay sang apiKey dự phòng kế tiếp
+          }
 
-        // Nếu quá hạn mức Quota (429)
-        if (errorStr.contains('429') ||
-            errorStr.contains('resource_exhausted') ||
-            errorStr.contains('quota')) {
-          throw const TranslationException(
-            'Đã vượt giới hạn lượt gọi Gemini (Quota). Hãy thử lại sau ít phút.',
-          );
+          // Nếu model 503 (quá tải), no longer available, deprecated hoặc 404, tự động chuyển sang model tiếp theo
+          continue;
         }
-
-        // Nếu model 503 (quá tải), no longer available, deprecated hoặc 404, tự động chuyển sang model tiếp theo
-        continue;
       }
     }
 
@@ -120,6 +115,21 @@ $text
       if (errLower.contains('socketexception') || errLower.contains('failed host lookup')) {
         throw const TranslationException(
           'Không kết nối được Gemini. Vui lòng kiểm tra Internet.',
+        );
+      }
+      if (errLower.contains('401') ||
+          errLower.contains('403') ||
+          errLower.contains('api_key_invalid') ||
+          errLower.contains('permission_denied')) {
+        throw const TranslationException(
+          'Tất cả API Key đều không hợp lệ. Hãy kiểm tra lại danh sách geminiApiKeys.',
+        );
+      }
+      if (errLower.contains('429') ||
+          errLower.contains('resource_exhausted') ||
+          errLower.contains('quota')) {
+        throw const TranslationException(
+          'Tất cả các API Key đều đã hết lượt miễn phí (Quota). Hãy thử lại sau ít phút.',
         );
       }
       if (errLower.contains('503') ||

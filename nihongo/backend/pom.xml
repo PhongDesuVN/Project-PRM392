@@ -73,6 +73,12 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
+        <!-- Spring Boot Mail (Gửi email OTP qua Gmail SMTP) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
         <!-- Lombok 1.18.36 tương thích Java 21-27 -->
         <dependency>
             <groupId>org.projectlombok</groupId>

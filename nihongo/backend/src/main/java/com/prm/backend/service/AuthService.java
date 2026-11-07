@@ -9,7 +9,10 @@ import com.prm.backend.repository.UserRepository;
 import com.prm.backend.security.SecurityConfig.JwtProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.google.firebase.auth.FirebaseAuth;
@@ -22,7 +25,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.Base64;
 import java.util.HexFormat;
 
 @Service
@@ -31,31 +33,37 @@ public class AuthService {
     private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
     private static final String INVALID_CREDENTIALS = "Email hoặc mật khẩu không đúng";
-    private static final String INVALID_TOKEN = "Mã đặt lại không hợp lệ hoặc đã hết hạn";
+    private static final String INVALID_TOKEN = "Mã xác nhận không hợp lệ hoặc đã hết hạn";
 
     private final UserRepository userRepository;
     private final ResetTokenRepository resetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider tokenProvider;
+    private final ObjectProvider<JavaMailSender> mailSenderProvider;
     private final SecureRandom secureRandom = new SecureRandom();
 
-    @Value("${app.password-reset.expiration-minutes:30}")
+    @Value("${app.password-reset.expiration-minutes:15}")
     private long resetExpirationMinutes;
 
     /** Khi true, /auth/forgot-password tra kem token trong response (chi dung cho dev). */
     @Value("${app.password-reset.expose-token:false}")
     private boolean exposeResetToken;
 
+    @Value("${spring.mail.username:}")
+    private String mailUsername;
+
     // Constructor thuần thay thế Lombok @RequiredArgsConstructor
     public AuthService(UserRepository userRepository,
-                   ResetTokenRepository resetTokenRepository,
-                   PasswordEncoder passwordEncoder,
-                   JwtProvider tokenProvider) {
-    this.userRepository = userRepository;
-    this.resetTokenRepository = resetTokenRepository;
-    this.passwordEncoder = passwordEncoder;
-    this.tokenProvider = tokenProvider;
-}
+                       ResetTokenRepository resetTokenRepository,
+                       PasswordEncoder passwordEncoder,
+                       JwtProvider tokenProvider,
+                       ObjectProvider<JavaMailSender> mailSenderProvider) {
+        this.userRepository = userRepository;
+        this.resetTokenRepository = resetTokenRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.tokenProvider = tokenProvider;
+        this.mailSenderProvider = mailSenderProvider;
+    }
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -150,20 +158,53 @@ public class AuthService {
             token.setExpiresAt(LocalDateTime.now().plusMinutes(resetExpirationMinutes));
             resetTokenRepository.save(token);
 
-            // TODO: gui token qua email. Hien tai log ra console de test localhost.
-            log.info("Password reset token for {}: {}", email, plainToken);
+            log.info("==================================================");
+            log.info("MA OTP DAT LAI MAT KHAU CHO {}: {}", email, plainToken);
+            log.info("==================================================");
+
+            sendResetOtpEmail(email, user.getFullName(), plainToken);
         }
 
-        String message = "Nếu email tồn tại trong hệ thống, hướng dẫn đặt lại mật khẩu đã được gửi.";
+        String message = "Mã xác nhận OTP 6 số đã được gửi về email của bạn.";
         if (exposeResetToken && plainToken != null) {
             message = message + " [dev] token=" + plainToken;
         }
         return new MessageResponse(message);
     }
 
+    private void sendResetOtpEmail(String toEmail, String fullName, String otpCode) {
+        JavaMailSender mailSender = mailSenderProvider.getIfAvailable();
+        if (mailSender == null || mailUsername == null || mailUsername.isBlank()) {
+            log.warn("Chua cau hinh spring.mail.username/password trong application.properties. Su dung ma OTP trong log console: {}", otpCode);
+            return;
+        }
+
+        try {
+            SimpleMailMessage mail = new SimpleMailMessage();
+            mail.setFrom(mailUsername);
+            mail.setTo(toEmail);
+            mail.setSubject("[Nihongo App] Mã xác nhận đặt lại mật khẩu của bạn");
+            String displayName = (fullName != null && !fullName.isBlank()) ? fullName : toEmail;
+            mail.setText(
+                    "Xin chào " + displayName + ",\n\n"
+                    + "Bạn vừa yêu cầu đặt lại mật khẩu trên ứng dụng học tiếng Nhật Nihongo.\n"
+                    + "Mã xác nhận OTP (6 chữ số) của bạn là:\n\n"
+                    + "    " + otpCode + "\n\n"
+                    + "Mã này có hiệu lực trong vòng " + resetExpirationMinutes + " phút.\n"
+                    + "Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.\n\n"
+                    + "Trân trọng,\nĐội ngũ Nihongo App"
+            );
+            mailSender.send(mail);
+            log.info("Da gui email OTP thanh cong toi {}", toEmail);
+        } catch (Exception ex) {
+            log.error("Loi khi gui email OTP toi {}: {}", toEmail, ex.getMessage());
+        }
+    }
+
     @Transactional
     public MessageResponse resetPassword(ResetPasswordRequest request) {
-        ResetToken token = resetTokenRepository.findByTokenHash(sha256(request.token()))
+        String cleanToken = request.token().trim();
+        ResetToken token = resetTokenRepository.findByTokenHash(sha256(cleanToken))
                 .orElseThrow(() -> new BusinessException(INVALID_TOKEN));
 
         if (!token.isUsable(LocalDateTime.now())) {
@@ -189,10 +230,12 @@ public class AuthService {
         return email.trim().toLowerCase();
     }
 
+    /**
+     * Sinh mã OTP 6 chữ số ngẫu nhiên (từ 100000 đến 999999).
+     */
     private String generateRawToken() {
-        byte[] bytes = new byte[32];
-        secureRandom.nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+        int otp = 100000 + secureRandom.nextInt(900000);
+        return String.format("%06d", otp);
     }
 
     private String sha256(String value) {

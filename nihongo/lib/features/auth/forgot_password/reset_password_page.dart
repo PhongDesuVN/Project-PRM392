@@ -55,7 +55,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     setState(() => _isLoading = true);
     try {
       await _authService.resetPassword(
-        token: _tokenController.text,
+        token: _tokenController.text.trim(),
         newPassword: _passwordController.text,
       );
       if (!mounted) return;
@@ -161,14 +161,15 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                   child: Column(
                     children: [
                       AuthTextField(
-                        labelText: 'Mã xác nhận',
-                        hintText: 'Nhập mã token đặt lại mật khẩu',
+                        labelText: 'Mã xác nhận (OTP 6 số)',
+                        hintText: 'Nhập mã 6 số nhận từ Gmail',
                         prefixIcon: Icons.vpn_key_outlined,
                         controller: _tokenController,
+                        keyboardType: TextInputType.number,
                         textInputAction: TextInputAction.next,
                         validator: (value) =>
                             value == null || value.trim().isEmpty
-                                ? 'Vui lòng nhập mã đặt lại'
+                                ? 'Vui lòng nhập mã xác nhận 6 số'
                                 : null,
                       ),
                       const SizedBox(height: 16),

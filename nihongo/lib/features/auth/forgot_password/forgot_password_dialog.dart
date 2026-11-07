@@ -36,22 +36,17 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
     setState(() => _isLoading = true);
 
     try {
-      final message = await _authService.forgotPassword(email: email);
+      await _authService.forgotPassword(email: email);
       if (!mounted) return;
-
-      final match = RegExp(r'token=(\S+)').firstMatch(message);
-      final devToken = match?.group(1);
 
       final navigator = Navigator.of(context);
       final messenger = ScaffoldMessenger.of(context);
 
       navigator.pop();
       messenger.showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text(
-            devToken != null
-                ? 'Đã tạo mã đặt lại mật khẩu.'
-                : 'Nếu email hợp lệ, bạn sẽ nhận được hướng dẫn đặt lại mật khẩu.',
+            'Mã xác nhận OTP 6 số đã được gửi về email của bạn.',
           ),
         ),
       );
@@ -60,7 +55,6 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
         MaterialPageRoute<void>(
           builder: (_) => ResetPasswordPage(
             email: email,
-            prefilledToken: devToken,
           ),
         ),
       );

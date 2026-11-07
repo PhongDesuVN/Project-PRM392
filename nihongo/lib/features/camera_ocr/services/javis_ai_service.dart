@@ -6,14 +6,44 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import '../models/japanese_analysis_model.dart';
 
 class JavisAiService {
-  static const String geminiApiKey =
-      'AQ.Ab8RN6KnH9R5g5OUKlUc5cJA8Hldnl4KOcej6_7Q1PR8TISY7Q';
+  /// Danh sách API Key xoay vòng tự động (Key Pool / Auto-Rotation).
+  /// Bạn chỉ cần tạo thêm 2-3 API Key từ các Gmail khác nhau trên https://aistudio.google.com/app/apikey
+  /// rồi dán nối tiếp vào danh sách dưới đây.
+  /// Khi Key đang dùng hết lượt miễn phí trong ngày (429) hoặc lỗi key, App tự nhảy sang Key tiếp theo!
+  static const List<String> geminiApiKeys = [
+    'AQ.Ab8RN6KnH9R5g5OUKlUc5cJA8Hldnl4KOcej6_7Q1PR8TISY7Q', // Key 1 (Chính)
+    'AQ.Ab8RN6IGKhFR4ZkucX4whfTCWFRk2yjlEJ8d7HAbAs3LmOOPxg', // Key 2 (Dự phòng - Gmail 2)
+    // 'AIzaSy..._KEY_DU_PHONG_3', // Bỏ dấu // ở đầu dòng và dán Key thứ 3 vào đây
+  ];
+
+  static String _activeApiKey = geminiApiKeys.first;
+
+  /// Trả về API Key đang hoạt động hiện tại
+  static String get geminiApiKey => _activeApiKey;
+
+  /// Danh sách các API Key hợp lệ theo thứ tự ưu tiên (Key đang sống lên đầu)
+  static List<String> get orderedApiKeys {
+    final validKeys = geminiApiKeys
+        .map((k) => k.trim())
+        .where((k) => k.isNotEmpty && !k.startsWith('AIzaSy...'))
+        .toList();
+    if (validKeys.isEmpty) return [geminiApiKeys.first];
+    return [
+      if (validKeys.contains(_activeApiKey)) _activeApiKey,
+      ...validKeys.where((k) => k != _activeApiKey),
+    ];
+  }
+
+  /// Đánh dấu Key hoạt động tốt để ưu tiên dùng luôn cho các lần gọi sau
+  static void markKeyWorking(String apiKey) {
+    _activeApiKey = apiKey;
+  }
 
   /// Danh sách các model Flash tối ưu theo thứ tự ưu tiên tốc độ cao nhất (đã test thực tế trên API Key)
   static const List<String> candidateModels = [
-    'gemini-3.1-flash-lite',    // Top 1 siêu tốc (~1.0s), phản hồi tức thì, không bị 503
+    'gemini-3.1-flash-lite', // Top 1 siêu tốc (~1.0s), phản hồi tức thì, không bị 503
     'gemini-flash-lite-latest', // Top 2 tốc độ (~1.1s)
-    'gemini-3.6-flash',         // Bản dự phòng ổn định (~3.0s)
+    'gemini-3.6-flash', // Bản dự phòng ổn định (~3.0s)
   ];
 
   static final JavisAiService instance = JavisAiService._internal();
@@ -63,10 +93,10 @@ Chỉ trả về duy nhất chuỗi JSON hợp lệ theo cấu trúc mẫu sau (
 }
 ''';
 
-  GenerativeModel _createGenerativeModel(String model) {
+  GenerativeModel _createGenerativeModel(String model, String apiKey) {
     return GenerativeModel(
       model: model,
-      apiKey: geminiApiKey,
+      apiKey: apiKey,
       generationConfig: GenerationConfig(
         temperature: 0.1, // Nhiệt độ thấp giúp AI phản hồi ngay lập tức, cấu trúc JSON nhất quán
         maxOutputTokens: 2048, // Giới hạn token đầu ra giúp hoàn tất nhanh hơn
@@ -99,69 +129,82 @@ Chỉ trả về duy nhất chuỗi JSON hợp lệ theo cấu trúc mẫu sau (
 
     Object? lastError;
 
-    for (final modelName in modelsToTry) {
-      try {
-        final model = _createGenerativeModel(modelName);
-        final response = await model.generateContent([content]);
-        final responseText = response.text;
+    // Xoay vòng qua từng API Key trong danh sách dự phòng (Key Pool)
+    for (final apiKey in orderedApiKeys) {
+      for (final modelName in modelsToTry) {
+        try {
+          final model = _createGenerativeModel(modelName, apiKey);
+          final response = await model.generateContent([content]);
+          final responseText = response.text;
 
-        if (responseText == null || responseText.trim().isEmpty) {
-          throw Exception(
-            'Không nhận được phản hồi từ Javis AI. Vui lòng chụp lại ảnh rõ nét hơn.',
-          );
+          if (responseText == null || responseText.trim().isEmpty) {
+            throw Exception(
+              'Không nhận được phản hồi từ Javis AI. Vui lòng chụp lại ảnh rõ nét hơn.',
+            );
+          }
+
+          var cleanJson = responseText.trim();
+          if (cleanJson.startsWith('```json')) {
+            cleanJson = cleanJson.substring(7);
+          } else if (cleanJson.startsWith('```')) {
+            cleanJson = cleanJson.substring(3);
+          }
+          if (cleanJson.endsWith('```')) {
+            cleanJson = cleanJson.substring(0, cleanJson.length - 3);
+          }
+          cleanJson = cleanJson.trim();
+
+          final decoded = jsonDecode(cleanJson);
+          if (decoded is! Map<String, dynamic>) {
+            throw Exception(
+              'Dữ liệu phân tích trả về không đúng định dạng JSON.',
+            );
+          }
+
+          // Lưu lại API Key và model thành công cho các lần gọi tiếp theo
+          markKeyWorking(apiKey);
+          _activeModelName = modelName;
+          return AnalysisResult.fromJson(decoded);
+        } catch (e) {
+          lastError = e;
+          final errString = e.toString().toLowerCase();
+
+          // Nếu lỗi do mạng, không thử các model/key khác mà báo lỗi mạng ngay
+          if (errString.contains('socketexception') ||
+              errString.contains('handshakeexception') ||
+              errString.contains('failed host lookup')) {
+            throw Exception(
+              'Không thể kết nối đến máy chủ Javis AI. Vui lòng kiểm tra kết nối mạng của bạn.',
+            );
+          }
+
+          // Nếu Key hiện tại bị lỗi (401/403) hoặc hết Quota (429), nhảy ngay sang API Key tiếp theo
+          if (errString.contains('401') ||
+              errString.contains('403') ||
+              errString.contains('api_key_invalid') ||
+              errString.contains('permission_denied') ||
+              errString.contains('429') ||
+              errString.contains('resource_exhausted') ||
+              errString.contains('quota')) {
+            break; // Thoát vòng lặp model để chuyển ngay sang apiKey kế tiếp
+          }
+
+          // Nếu lỗi do model quá tải (503), chưa hỗ trợ/đã đóng (404/no longer available), thử model tiếp theo
+          if (errString.contains('503') ||
+              errString.contains('unavailable') ||
+              errString.contains('high demand') ||
+              errString.contains('overloaded') ||
+              errString.contains('no longer available') ||
+              errString.contains('deprecated') ||
+              errString.contains('not found') ||
+              errString.contains('not supported') ||
+              errString.contains('404')) {
+            continue;
+          }
+
+          // Các lỗi khác (e.g. JSON decode error) ném ra luôn
+          rethrow;
         }
-
-        var cleanJson = responseText.trim();
-        if (cleanJson.startsWith('```json')) {
-          cleanJson = cleanJson.substring(7);
-        } else if (cleanJson.startsWith('```')) {
-          cleanJson = cleanJson.substring(3);
-        }
-        if (cleanJson.endsWith('```')) {
-          cleanJson = cleanJson.substring(0, cleanJson.length - 3);
-        }
-        cleanJson = cleanJson.trim();
-
-        final decoded = jsonDecode(cleanJson);
-        if (decoded is! Map<String, dynamic>) {
-          throw Exception(
-            'Dữ liệu phân tích trả về không đúng định dạng JSON.',
-          );
-        }
-
-        // Lưu lại model thành công cho các lần gọi tiếp theo
-        _activeModelName = modelName;
-        return AnalysisResult.fromJson(decoded);
-      } catch (e) {
-        lastError = e;
-        final errString = e.toString().toLowerCase();
-
-        // Nếu lỗi do mạng, không thử các model khác mà báo lỗi mạng ngay
-        if (errString.contains('socketexception') ||
-            errString.contains('handshakeexception') ||
-            errString.contains('failed host lookup')) {
-          throw Exception(
-            'Không thể kết nối đến máy chủ Javis AI. Vui lòng kiểm tra kết nối mạng của bạn.',
-          );
-        }
-
-        // Nếu lỗi do model quá tải (503), chưa hỗ trợ/đã đóng (404/no longer available), hết quota (429), chuyển sang model tiếp theo
-        if (errString.contains('503') ||
-            errString.contains('unavailable') ||
-            errString.contains('high demand') ||
-            errString.contains('overloaded') ||
-            errString.contains('no longer available') ||
-            errString.contains('deprecated') ||
-            errString.contains('not found') ||
-            errString.contains('not supported') ||
-            errString.contains('404') ||
-            errString.contains('429') ||
-            errString.contains('resource_exhausted')) {
-          continue;
-        }
-
-        // Các lỗi khác (e.g. JSON decode error) ném ra luôn
-        rethrow;
       }
     }
 
